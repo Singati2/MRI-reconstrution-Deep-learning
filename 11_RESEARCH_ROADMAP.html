@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>11 — Research Roadmap (source-grounded, for your CS+DL imaging dissertation)</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]'],['$$','$$']] },
+                    options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root { --bg:#ffffff; --fg:#1a1a1a; --muted:#57606a; --border:#d0d7de; --code-bg:#f6f8fa;
+        --accent:#0969da; --th:#f6f8fa; --quote:#0969da; --quote-bg:#f6f8fa; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --fg:#e6edf3; --muted:#8b949e;
+        --border:#30363d; --code-bg:#161b22; --accent:#58a6ff; --th:#161b22; --quote:#58a6ff; --quote-bg:#161b22; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+.wrap { max-width:900px; margin:0 auto; padding:32px 20px 96px; }
+.nav { font-size:14px; margin-bottom:24px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+.nav a { color:var(--accent); text-decoration:none; }
+h1,h2,h3,h4 { line-height:1.25; margin-top:1.6em; }
+h1 { font-size:1.9em; border-bottom:1px solid var(--border); padding-bottom:.3em; }
+h2 { font-size:1.45em; border-bottom:1px solid var(--border); padding-bottom:.25em; }
+a { color:var(--accent); }
+code { background:var(--code-bg); padding:.15em .4em; border-radius:5px; font-size:.88em;
+        font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+pre { background:var(--code-bg); padding:14px 16px; border-radius:8px; overflow-x:auto;
+       border:1px solid var(--border); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid var(--quote);
+              background:var(--quote-bg); border-radius:0 6px 6px 0; color:var(--fg); }
+blockquote p { margin:.3em 0; }
+.tablewrap { overflow-x:auto; margin:1em 0; }
+table { border-collapse:collapse; width:100%; font-size:.9em; }
+th,td { border:1px solid var(--border); padding:7px 11px; text-align:left; vertical-align:top; }
+th { background:var(--th); }
+.math { overflow-x:auto; margin:1em 0; padding:6px 0; }
+hr { border:none; border-top:1px solid var(--border); margin:2em 0; }
+img { max-width:100%; }
+.foot { margin-top:64px; padding-top:16px; border-top:1px solid var(--border);
+         color:var(--muted); font-size:13px; }
+</style></head>
+<body><div class="wrap">
+<div class="nav">📚 <a href="index.html">Study index</a> &nbsp;·&nbsp; Toner 2025 — CS-MRI / Deep-Learning study</div>
+<h1 id="11-research-roadmap-source-grounded-for-your-csdl-imaging-dissertation">11 — Research Roadmap (source-grounded, for your CS+DL imaging dissertation)</h1>
+<p>Directions <strong>traceable to Toner 2025</strong>, split into replication (A), extension (B), and PhD-level (C). Each carries
+a <strong>novelty risk</strong> flag — nothing here is claimed novel until a literature check confirms it (§2.4).</p>
+<blockquote>
+<p>⚠️ Novelty caveat: promising directions often die at the literature check. So each item below states <strong>what must
+be checked first</strong> before you invest. Do the lit-check <em>before</em> scaffolding any pilot.</p>
+</blockquote>
+<h2 id="research-translation-table">Research-translation table</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Source concept</th>
+<th>What it means</th>
+<th>Classical MRI use</th>
+<th>DL translation</th>
+<th>Possible experiment</th>
+<th>Novelty risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Temporal SVD subspace (Eq 4, P=4)</td>
+<td>32 TEs live in a 4-D decay space</td>
+<td>PC-coefficient CS (ref 22)</td>
+<td>subspace inside unrolled net</td>
+<td>vary P; measure T2-error vs compute</td>
+<td>Low (replication)</td>
+</tr>
+<tr>
+<td>DC layer (Eq 9)</td>
+<td>learned-step gradient descent to data</td>
+<td>CG / ISTA data term</td>
+<td>trainable η, K cascades</td>
+<td>ablate K, η-sharing</td>
+<td>Low–Med</td>
+</tr>
+<tr>
+<td>Self-supervised k-space loss (Eq 12–13)</td>
+<td>train with no clean target</td>
+<td>—</td>
+<td>SSDU variant, loss over full y</td>
+<td>true-disjoint SSDU vs full-y leakage test</td>
+<td><strong>Med</strong> (see below)</td>
+</tr>
+<tr>
+<td>160-view "sweet spot" (Fig 3, Table 1)</td>
+<td>performance cliff 160→128</td>
+<td>CS phase transition</td>
+<td>DL failure boundary</td>
+<td>map error vs views finely</td>
+<td><strong>Med–High</strong></td>
+</tr>
+<tr>
+<td>Adjoint-NUFFT-as-reference (Audit A7)</td>
+<td>non-ideal gold standard</td>
+<td>gridding recon</td>
+<td>—</td>
+<td>sensitivity of conclusions to reference</td>
+<td>Low</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="a-safe-replication-projects-build-understanding-low-risk">A. Safe replication projects (build understanding, low risk)</h2>
+<ul>
+<li><strong>A1. Reproduce the Table-1 acceleration trend on a public dataset.</strong> Use fastMRI knee/brain or an open radial
+  set; implement adjoint-NUFFT, an LLR/subspace CS baseline, and a small unrolled DC net; reproduce "DL more
+  stable than CS as acceleration rises." <em>Check first:</em> dataset availability (fastMRI DUA is a known blocker).
+  <em>Minimum publishable result:</em> a clean replication of the DL-vs-CS-stability curve.</li>
+<li><strong>A2. Re-derive and unit-test the operators.</strong> Already started in <code>code/</code> — extend to radial NUFFT + multicoil,
+  verify the <em>true</em> adjoint test, then show the paper's <code>A*=AᴴD</code> deliberately fails it (Audit A2). Pure understanding.</li>
+</ul>
+<h2 id="b-methodological-extension-projects-defensible-modification">B. Methodological extension projects (defensible modification)</h2>
+<ul>
+<li><strong>B1. Disjoint-mask SSDU vs full-y loss.</strong> The paper computes the self-supervised loss over the <strong>entire</strong> <code>y</code>
+  (Eq 12), unlike vanilla SSDU's disjoint held-out set. <strong>Test whether this leaks</strong> and inflates apparent T2
+  accuracy: compare true-disjoint SSDU, full-y, and a supervised oracle. <em>Check first:</em> whether SSDU-leakage in
+  subspace recon is already characterized (search Yaman 2020+, Millard/Chiew 2023 "theoretical framework for
+  self-supervised MRI"). <em>Novelty risk: Med</em> — the general leakage question is studied; the <em>subspace-constrained
+  full-y</em> variant may be a gap. <strong>Verify before committing.</strong></li>
+<li><strong>B2. Classical CS prior as an out-of-distribution stabilizer.</strong> Add a TV/low-rank term to the DC step and test
+  whether it improves generalization to unseen acceleration/masks (Open Q #2). <em>Check first:</em> plug-and-play +
+  unrolled hybrids (RED, PnP-VarNet) already exist — position carefully.</li>
+</ul>
+<h2 id="c-potential-phd-level-contributions-real-scientific-question-higher-risk">C. Potential PhD-level contributions (real scientific question, higher risk)</h2>
+<ul>
+<li><strong>C1. Does DL recon inherit a CS-style phase transition, and can theory predict the failure boundary?</strong>
+  The paper's 160→128 cliff is <em>empirically</em> a sharp transition. Map reconstruction error and <strong>uncertainty</strong>
+  finely vs. #views; test whether a Donoho–Tanner-style boundary predicts where DL collapses; whether
+  <strong>uncertainty rises <em>before</em> PSNR collapses</strong> (Open Q #3). Aligns with your standing MRI phase-transition
+  prereg — Toner's cliff is concrete supporting motivation. <em>Check first:</em> the phase-transition prereg's own
+  novelty audit still governs. <em>Novelty risk: the H0/smooth prior is strong — treat honestly.</em></li>
+<li><strong>C2. Joint calibration of reconstruction quality and downstream T2/lesion task.</strong> Toner evaluates ROI T2 error
+  and shows pathology cases but never links reconstruction uncertainty to <strong>lesion detectability / T2 decision</strong>.
+  Question: can recon quality and a downstream clinical task be <em>jointly calibrated</em>, and do data-consistency
+  residuals (Eq 7) predict clinically meaningful failure (Open Q #4, #8, #12)? Natural pairing with the
+  <strong>Toner 2026 UQ paper</strong> already on your Desktop. <em>Novelty risk: Med–High; needs annotated lesion data.</em></li>
+</ul>
+<h2 id="ranking-for-your-constraints-rtx-2080-ti-biostat-strength-novelty-check-discipline">Ranking (for your constraints: RTX 2080 Ti, biostat strength, novelty-check discipline)</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Project</th>
+<th>Sci value</th>
+<th>Feasibility</th>
+<th>Novelty</th>
+<th>Data risk</th>
+<th>Compute</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>A1 replication</strong></td>
+<td>Med</td>
+<td>High</td>
+<td>(n/a)</td>
+<td>Med</td>
+<td>Low</td>
+<td><strong>Start here</strong> — builds credibility + code.</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>C1 phase transition</strong></td>
+<td>High</td>
+<td>Med</td>
+<td>Med*</td>
+<td>Med</td>
+<td>Med</td>
+<td>Highest upside; ties to your existing prereg. Lit-check H0 first.</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>B1 SSDU leakage</strong></td>
+<td>Med-High</td>
+<td>Med</td>
+<td>Med</td>
+<td>Med</td>
+<td>Med</td>
+<td>Sharp, testable; <strong>must</strong> lit-check Millard/Chiew 2023 first.</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>C2 joint calibration</strong></td>
+<td>High</td>
+<td>Low-Med</td>
+<td>Med-High</td>
+<td>High (lesions)</td>
+<td>Med</td>
+<td>Big, but data-gated; pair with Toner 2026.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Immediate next action (before any pilot):</strong> run the lit-checks named in B1 and C1. The novelty check kills more
+ideas than the method does — do it <em>first</em>.</p>
+<div class="foot">Rendered from <code>11_RESEARCH_ROADMAP.md</code> · Toner et al., <em>Magn Reson Med</em> 2025;94:2475–2491 ·
+DOI 10.1002/mrm.70017</div>
+</div></body></html>

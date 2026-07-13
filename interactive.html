@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 1 — Interactive · Toner 2025 CS-MRI/DL Study</title>
+<script>
+window.MathJax = { tex:{ inlineMath:[['\\(','\\)']], displayMath:[['\\[','\\]'],['$$','$$']] },
+  options:{ skipHtmlTags:['script','noscript','style','textarea','pre','code'] } };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root{
+  --bg:#f9f9f7; --surface:#fcfcfb; --fg:#0b0b0b; --sec:#52514e; --muted:#898781;
+  --border:#e1e0d9; --axis:#c3c2b7; --code-bg:#f0efec; --accent:#2a78d6;
+  --dl:#2a78d6; --llr:#e34948; --good:#006300; --bad:#d03b3b;
+  --card:#ffffff; --quote-bg:#f0efec;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0d0d0d; --surface:#1a1a19; --fg:#ffffff; --sec:#c3c2b7; --muted:#898781;
+  --border:#2c2c2a; --axis:#383835; --code-bg:#161b22; --accent:#3987e5;
+  --dl:#3987e5; --llr:#e66767; --good:#0ca30c; --bad:#e66767;
+  --card:#161b22; --quote-bg:#161b22;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:28px 20px 96px}
+.nav{font-size:14px;margin-bottom:22px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.nav a{color:var(--accent);text-decoration:none}
+h1{font-size:1.9em;line-height:1.2}
+h2{font-size:1.4em;margin-top:1.8em;border-bottom:1px solid var(--border);padding-bottom:.25em}
+h3{margin-top:1.4em}
+code{background:var(--code-bg);padding:.12em .38em;border-radius:5px;font-size:.88em;
+  font-family:ui-monospace,Menlo,Consolas,monospace}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:18px 20px;margin:18px 0}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:20px;
+  background:var(--code-bg);color:var(--sec);margin-right:6px}
+figure{margin:0}
+figcaption{font-size:13px;color:var(--sec);margin-top:8px}
+.chart-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 10px}
+button{font:inherit;font-size:14px;cursor:pointer;border:1px solid var(--border);
+  background:var(--surface);color:var(--fg);border-radius:8px;padding:6px 12px}
+button:hover{border-color:var(--accent)}
+.legend{display:flex;gap:16px;font-size:14px;margin:4px 0 2px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.swatch{width:14px;height:3px;border-radius:2px;display:inline-block}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+svg{max-width:100%;height:auto;display:block}
+.tt{position:fixed;pointer-events:none;background:var(--card);border:1px solid var(--border);
+  border-radius:8px;padding:8px 10px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.18);
+  opacity:0;transition:opacity .08s;z-index:20;max-width:220px}
+table{border-collapse:collapse;width:100%;font-size:.92em;margin:10px 0}
+th,td{border:1px solid var(--border);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--code-bg)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.hidden{display:none}
+/* quiz */
+.q{margin:16px 0;padding:16px 18px;border:1px solid var(--border);border-radius:12px;background:var(--card)}
+.q .stem{font-weight:600;margin-bottom:10px}
+.opt{display:block;width:100%;text-align:left;margin:7px 0;padding:10px 12px;border-radius:9px;
+  border:1px solid var(--border);background:var(--surface)}
+.opt:hover{border-color:var(--accent)}
+.opt.correct{border-color:var(--good);background:color-mix(in srgb,var(--good) 12%,transparent)}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.opt:disabled{cursor:default;opacity:.85}
+.explain{margin-top:10px;font-size:14px;color:var(--sec);border-left:3px solid var(--accent);
+  padding:8px 12px;background:var(--quote-bg);border-radius:0 6px 6px 0}
+.score{font-weight:700;font-size:1.1em}
+.masterywrap input[type=range]{width:120px;vertical-align:middle}
+.pill{font-weight:700}
+.foot{margin-top:56px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:13px}
+</style></head>
+<body><div class="wrap">
+<div class="nav">📚 <a href="index.html">Study index</a> &nbsp;·&nbsp; Interactive Lesson 1</div>
+
+<h1>Lesson 1 — The RADTSE forward model &amp; the data-consistency step</h1>
+<p><span class="tag">🟢 intuition</span><span class="tag">🟣 math</span><span class="tag">🟠 MRI</span>
+<span class="tag">✅ quiz</span> Everything here is grounded in
+<strong>Toner et&nbsp;al., <em>Magn Reson Med</em> 2025;94:2475&ndash;2491</strong> (DOI 10.1002/mrm.70017).</p>
+
+<h2>1 · The one graph that tells the story</h2>
+<p>The paper&rsquo;s headline is that deep learning stays <em>stable</em> as you strip away radial views,
+while classical CS (locally-low-rank, LLR) degrades sharply. Below is <strong>Table&nbsp;1&rsquo;s
+&ldquo;All organs&rdquo; mean relative T2 error</strong>, plotted. Hover the points; toggle the table.</p>
+
+<figure class="card">
+  <div class="chart-tools">
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--dl)"></span> Deep learning</span>
+      <span><span class="swatch" style="background:var(--llr)"></span> LLR (compressed sensing)</span>
+    </div>
+    <button id="toggleTable" style="margin-left:auto">Show data table</button>
+  </div>
+  <div id="chart"></div>
+  <div id="tableView" class="hidden">
+    <table>
+      <thead><tr><th>Radial views</th><th class="num">DL error (%)</th><th class="num">LLR error (%)</th>
+        <th class="num">Approx. acceleration</th></tr></thead>
+      <tbody>
+        <tr><td>192 (6 / TE)</td><td class="num">5.35</td><td class="num">5.83</td><td class="num">2&times;</td></tr>
+        <tr><td>160 (5 / TE)</td><td class="num">6.06</td><td class="num">8.18</td><td class="num">2.4&times;</td></tr>
+        <tr><td>128 (4 / TE)</td><td class="num">6.25</td><td class="num">11.78</td><td class="num">3&times;</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <figcaption>Mean relative T2 error (%), all organs pooled, retrospective undersampling
+  (Toner 2025, Table&nbsp;1). Fewer views = more acceleration = harder. Note the <strong>160&rarr;128
+  cliff for LLR</strong> (8.18&rarr;11.78) while DL barely moves (6.06&rarr;6.25) &mdash; the empirical
+  &ldquo;160-view sweet spot.&rdquo;</figcaption>
+</figure>
+
+<h2>2 · The forward model (Equation 1)</h2>
+<p><span class="tag">🟠 MRI</span> A T2-weighted image at echo time \(\text{TE}_i\) becomes measured radial
+k-space by three operations: weight by coil sensitivities, Fourier-encode on the radial trajectory, sample.</p>
+<p style="text-align:center">\( y_i = \mathcal{T}_i\, S\, \bar{x}_i + \epsilon_i \)</p>
+<div class="card"><span class="tag">🟣 terms</span>
+\(\bar{x}_i\in\mathbb{C}^{N}\) true image · \(S\) coil sensitivities · \(\mathcal{T}_i\) nonuniform FFT
+(NUFFT, image&rarr;k-space) for TE\(_i\)&rsquo;s radial spokes · \(\epsilon_i\) noise ·
+\(y_i\in\mathbb{C}^{M}\) measured k-space. Few spokes per TE &rArr; \(y_i\) is badly undersampled &rArr;
+the adjoint image is streaky. <em>That</em> is the problem the network fixes.</div>
+
+<h2>3 · The data-consistency step (Equation 9) — the CS&rarr;DL bridge</h2>
+<p><span class="tag">🟢 intuition</span> Each cascade does two things: a CNN <em>denoises</em> the current
+image guess, then a <strong>data-consistency (DC)</strong> step drags it back toward the measured k-space
+with one gradient-descent step of learned size \(\eta\):</p>
+<p style="text-align:center">\( x''^{(j)} = \hat{x}'^{(j)} - \eta\, A^{*}\!\big(A\hat{x}'^{(j)} - y\big),
+\qquad \hat{x}'^{(j)} = f_{\text{CNN}}^{(j)}(x'^{(j-1)}) \)</p>
+<div class="card"><span class="tag">📌 remember</span> Compare to <strong>ISTA</strong>:
+\( x^{k+1} = \operatorname{prox}_{\gamma\lambda R}\big(x^k - \gamma A^{H}(Ax^k-y)\big)\).
+The learned CNN <em>replaces the proximal operator</em> of a hand-designed regularizer, and the learned
+\(\eta\) replaces the fixed step \(\gamma\). Master this one mapping and you understand the whole architecture.
+<br><span class="tag" style="margin-top:8px">⚠️ caution</span> The paper&rsquo;s \(A^{*}\) is
+<em>not</em> a true adjoint &mdash; it folds in density compensation (\(A^{*}:=A^{H}D\)). Keep a real
+\(A^{H}\) for testing (it passes the dot-product test) separate from the preconditioned \(A^{*}\) used in DC.</div>
+
+<h2>4 · Quiz — 5 questions <span class="score" id="score">(0 / 0)</span></h2>
+<p>Pick an answer to see whether it&rsquo;s right and <em>why</em>. Answers are not revealed until you try.</p>
+<div id="quiz"></div>
+
+<h2>5 · Your mastery tracker</h2>
+<p>Rate yourself 0&ndash;5 (0 = not attempted, 5 = can derive independently). Saved in your browser.</p>
+<div class="masterywrap card"><table>
+  <thead><tr><th>Topic</th><th>Self-rating</th><th class="num">Score</th></tr></thead>
+  <tbody id="mastery"></tbody>
+</table>
+<button id="resetMastery" style="margin-top:10px">Reset ratings</button></div>
+
+<div id="tt" class="tt"></div>
+<div class="foot">Interactive Lesson 1 · data from Toner 2025 Table&nbsp;1 · palette validated (dataviz skill) ·
+equations from <code>02_EQUATION_REGISTER</code>.</div>
+
+<script>
+// ---------- Chart (SVG line, real Table 1 data) ----------
+const DATA = [
+  {views:192, dl:5.35, llr:5.83},
+  {views:160, dl:6.06, llr:8.18},
+  {views:128, dl:6.25, llr:11.78},
+];
+const cs = getComputedStyle(document.documentElement);
+const COL = { dl:cs.getPropertyValue('--dl').trim(), llr:cs.getPropertyValue('--llr').trim(),
+  axis:cs.getPropertyValue('--axis').trim(), muted:cs.getPropertyValue('--muted').trim(),
+  grid:cs.getPropertyValue('--border').trim(), ink:cs.getPropertyValue('--fg').trim(),
+  sec:cs.getPropertyValue('--sec').trim() };
+const W=680,H=380,M={t:24,r:70,b:52,l:52};
+const xs=DATA.map(d=>d.views), yMax=13, yMin=0;
+const px=i=>M.l+(i/(DATA.length-1))*(W-M.l-M.r);
+const py=v=>M.t+(1-(v-yMin)/(yMax-yMin))*(H-M.t-M.b);
+function path(key){return DATA.map((d,i)=>(i?'L':'M')+px(i).toFixed(1)+' '+py(d[key]).toFixed(1)).join(' ');}
+function ticksY(){let o='';for(let v=0;v<=yMax;v+=2){const y=py(v);
+  o+=`<line x1="${M.l}" y1="${y}" x2="${W-M.r}" y2="${y}" stroke="${COL.grid}" stroke-width="1"/>`+
+     `<text x="${M.l-8}" y="${y+4}" text-anchor="end" font-size="12" fill="${COL.muted}">${v}</text>`;}
+  return o;}
+function ticksX(){return DATA.map((d,i)=>`<text x="${px(i)}" y="${H-M.b+22}" text-anchor="middle"
+  font-size="12" fill="${COL.muted}">${d.views}</text>`).join('');}
+function marks(key,color){return DATA.map((d,i)=>`<circle cx="${px(i)}" cy="${py(d[key])}" r="6"
+  fill="${color}" stroke="var(--surface)" stroke-width="2" data-i="${i}" data-k="${key}"
+  style="cursor:pointer"/>`).join('');}
+function endLabel(key,color,txt){const i=DATA.length-1;
+  return `<text x="${px(i)+12}" y="${py(DATA[i][key])+4}" font-size="13" font-weight="700"
+    fill="${color}">${txt}</text>`;}
+const svg=`<svg viewBox="0 0 ${W} ${H}" role="img"
+  aria-label="Line chart: DL vs LLR mean relative T2 error across 192, 160, 128 radial views">
+  <rect x="0" y="0" width="${W}" height="${H}" fill="var(--surface)" rx="8"/>
+  ${ticksY()}${ticksX()}
+  <line x1="${M.l}" y1="${M.t}" x2="${M.l}" y2="${H-M.b}" stroke="${COL.axis}"/>
+  <line x1="${M.l}" y1="${H-M.b}" x2="${W-M.r}" y2="${H-M.b}" stroke="${COL.axis}"/>
+  <text x="14" y="${(M.t+H-M.b)/2}" transform="rotate(-90 14 ${(M.t+H-M.b)/2})" text-anchor="middle"
+    font-size="12" fill="${COL.sec}">Mean relative T2 error (%)</text>
+  <text x="${(M.l+W-M.r)/2}" y="${H-8}" text-anchor="middle" font-size="12" fill="${COL.sec}">
+    Radial views  (fewer → more accelerated →)</text>
+  <path d="${path('llr')}" fill="none" stroke="${COL.llr}" stroke-width="2.5"/>
+  <path d="${path('dl')}"  fill="none" stroke="${COL.dl}"  stroke-width="2.5"/>
+  ${marks('llr',COL.llr)}${marks('dl',COL.dl)}
+  ${endLabel('llr',COL.llr,'LLR')}${endLabel('dl',COL.dl,'DL')}
+</svg>`;
+document.getElementById('chart').innerHTML=svg;
+
+// hover tooltips
+const tt=document.getElementById('tt');
+document.querySelectorAll('#chart circle').forEach(c=>{
+  c.addEventListener('mousemove',e=>{const d=DATA[+c.dataset.i],k=c.dataset.k;
+    tt.innerHTML=`<b>${d.views} views</b><br>${k==='dl'?'Deep learning':'LLR (CS)'}: <b>${d[k]}%</b> T2 error`;
+    tt.style.left=(e.clientX+14)+'px';tt.style.top=(e.clientY+14)+'px';tt.style.opacity=1;});
+  c.addEventListener('mouseleave',()=>tt.style.opacity=0);
+});
+// table toggle
+const tv=document.getElementById('tableView'),btn=document.getElementById('toggleTable');
+btn.onclick=()=>{const h=tv.classList.toggle('hidden');btn.textContent=h?'Show data table':'Hide data table';};
+
+// ---------- Quiz ----------
+const QUIZ=[
+ {stem:'In \\(y_i=\\mathcal{T}_i S\\bar{x}_i+\\epsilon_i\\), what does \\(\\mathcal{T}_i\\) do?',
+  opts:['Inverse-reconstructs the image from k-space',
+        'Applies coil sensitivities to the image',
+        'Fourier-encodes the image onto TE\\(_i\\)&rsquo;s radial trajectory (image → k-space)',
+        'Density-compensates the sampled k-space'],
+  correct:2,
+  why:'\\(\\mathcal{T}_i\\) is the nonuniform FFT (NUFFT) — it maps an image to radial k-space samples for that echo time. Coil weighting is \\(S\\); density comp is \\(D\\); reconstruction is the adjoint \\(\\mathcal{T}_i^{*}\\).'},
+ {stem:'Why is the per-TE image \\(x_i=S^{*}\\mathcal{T}_i^{*}\\bar D y_i\\) streaky at high acceleration?',
+  opts:['Because the NUFFT is nonlinear',
+        'Because each TE keeps only a few radial spokes, so the adjoint under-samples k-space',
+        'Because coil sensitivities are unknown',
+        'Because the T2 decay is too fast'],
+  correct:1,
+  why:'Few spokes per TE ⇒ sparse angular coverage ⇒ the density-compensated adjoint leaves radial streak artifacts. This is exactly what the CNN+DC cascade is trained to remove.'},
+ {stem:'In the DC step \\(x\'\'=\\hat x\'-\\eta A^{*}(A\\hat x\'-y)\\), what plays the role of ISTA&rsquo;s proximal operator?',
+  opts:['The step size \\(\\eta\\)','The forward operator \\(A\\)',
+        'The learned CNN block \\(f_{\\text{CNN}}\\)','The measured data \\(y\\)'],
+  correct:2,
+  why:'The CNN replaces \\(\\operatorname{prox}_{\\gamma\\lambda R}\\) — it is a learned, implicit regularizer. The learned \\(\\eta\\) replaces the fixed gradient step \\(\\gamma\\). That substitution IS the CS→DL bridge.'},
+ {stem:'The paper writes \\(A^{*}:=A^{H}D\\). What is the practical consequence?',
+  opts:['\\(A^{*}\\) is the true mathematical adjoint of \\(A\\)',
+        '\\(A^{*}\\) is a density-compensated back-projection, so a dot-product adjoint test on it fails by design',
+        'The forward model becomes nonlinear',
+        'It makes the network unsupervised'],
+  correct:1,
+  why:'Folding \\(D\\) in makes \\(A^{*}\\) a preconditioned back-projection, not the true adjoint \\(A^{H}\\). Your code should keep a real \\(A^{H}\\) (passes \\(\\langle Ax,y\\rangle=\\langle x,A^{H}y\\rangle\\)) separate from the DC-step \\(A^{*}\\). (Audit A2.)'},
+ {stem:'From the chart: what is the evidence for a &ldquo;160-view sweet spot&rdquo;?',
+  opts:['DL error is exactly zero at 160 views',
+        'LLR beats DL at every acceleration',
+        'Going 160→128, LLR error jumps 8.18→11.78% while DL stays ~6%, so 160 is the last stable point',
+        'Both methods fail identically below 160 views'],
+  correct:2,
+  why:'DL degrades gracefully (6.06→6.25%) while LLR degrades sharply (8.18→11.78%). 160 views is where you still get reliable T2 maps in <3 min — beyond it, even DL starts to drop (Fig 3).'},
+];
+const quizEl=document.getElementById('quiz'),scoreEl=document.getElementById('score');
+let answered=0,correct=0;
+QUIZ.forEach((q,qi)=>{
+  const d=document.createElement('div');d.className='q';
+  d.innerHTML=`<div class="stem">${qi+1}. ${q.stem}</div>`;
+  q.opts.forEach((o,oi)=>{
+    const b=document.createElement('button');b.className='opt';b.innerHTML=String.fromCharCode(65+oi)+'. '+o;
+    b.onclick=()=>{
+      if(d.dataset.done)return; d.dataset.done=1; answered++;
+      const btns=d.querySelectorAll('.opt'); btns.forEach(x=>x.disabled=true);
+      btns[q.correct].classList.add('correct');
+      if(oi===q.correct){correct++;} else {b.classList.add('wrong');}
+      const ex=document.createElement('div');ex.className='explain';
+      ex.innerHTML=(oi===q.correct?'✅ Correct. ':'❌ Not quite. ')+q.why;
+      d.appendChild(ex);
+      scoreEl.textContent=`(${correct} / ${answered})`;
+      if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise([ex,btns[q.correct]]);
+    };
+    d.appendChild(b);
+  });
+  quizEl.appendChild(d);
+});
+
+// ---------- Mastery tracker (localStorage) ----------
+const TOPICS=['Forward model (Eq 1)','Adjoint vs. true inverse (Audit A2)',
+  'DC step ↔ ISTA (Eq 9)','Temporal SVD subspace (Eq 4)','Self-supervised k-space loss (Eq 12–13)'];
+const KEY='toner2025_mastery';
+let saved=JSON.parse(localStorage.getItem(KEY)||'{}');
+const mEl=document.getElementById('mastery');
+function drawMastery(){
+  mEl.innerHTML='';
+  TOPICS.forEach((t,i)=>{
+    const v=saved[i]??0;
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${t}</td>
+      <td><input type="range" min="0" max="5" value="${v}" data-i="${i}"></td>
+      <td class="num"><span class="pill" data-p="${i}">${v}</span></td>`;
+    mEl.appendChild(tr);
+  });
+  mEl.querySelectorAll('input').forEach(inp=>inp.oninput=e=>{
+    const i=e.target.dataset.i;saved[i]=+e.target.value;
+    mEl.querySelector(`[data-p="${i}"]`).textContent=e.target.value;
+    localStorage.setItem(KEY,JSON.stringify(saved));
+  });
+}
+drawMastery();
+document.getElementById('resetMastery').onclick=()=>{saved={};localStorage.removeItem(KEY);drawMastery();};
+</script>
+</body></html>
