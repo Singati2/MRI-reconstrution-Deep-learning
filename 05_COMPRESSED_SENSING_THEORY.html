@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>05 — Compressed-Sensing Theory &amp; Fundamentals</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]'],['$$','$$']] },
+                    options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root { --bg:#ffffff; --fg:#1a1a1a; --muted:#57606a; --border:#d0d7de; --code-bg:#f6f8fa;
+        --accent:#0969da; --th:#f6f8fa; --quote:#0969da; --quote-bg:#f6f8fa; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --fg:#e6edf3; --muted:#8b949e;
+        --border:#30363d; --code-bg:#161b22; --accent:#58a6ff; --th:#161b22; --quote:#58a6ff; --quote-bg:#161b22; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+.wrap { max-width:900px; margin:0 auto; padding:32px 20px 96px; }
+.nav { font-size:14px; margin-bottom:24px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+.nav a { color:var(--accent); text-decoration:none; }
+h1,h2,h3,h4 { line-height:1.25; margin-top:1.6em; }
+h1 { font-size:1.9em; border-bottom:1px solid var(--border); padding-bottom:.3em; }
+h2 { font-size:1.45em; border-bottom:1px solid var(--border); padding-bottom:.25em; }
+a { color:var(--accent); }
+code { background:var(--code-bg); padding:.15em .4em; border-radius:5px; font-size:.88em;
+        font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+pre { background:var(--code-bg); padding:14px 16px; border-radius:8px; overflow-x:auto;
+       border:1px solid var(--border); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid var(--quote);
+              background:var(--quote-bg); border-radius:0 6px 6px 0; color:var(--fg); }
+blockquote p { margin:.3em 0; }
+.tablewrap { overflow-x:auto; margin:1em 0; }
+table { border-collapse:collapse; width:100%; font-size:.9em; }
+th,td { border:1px solid var(--border); padding:7px 11px; text-align:left; vertical-align:top; }
+th { background:var(--th); }
+.math { overflow-x:auto; margin:1em 0; padding:6px 0; }
+hr { border:none; border-top:1px solid var(--border); margin:2em 0; }
+img { max-width:100%; }
+.foot { margin-top:64px; padding-top:16px; border-top:1px solid var(--border);
+         color:var(--muted); font-size:13px; }
+</style></head>
+<body><div class="wrap">
+<div class="nav">📚 <a href="index.html">Study index</a> &nbsp;·&nbsp; Toner 2025 — CS-MRI / Deep-Learning study</div>
+<h1 id="05-compressed-sensing-theory-fundamentals">05 — Compressed-Sensing Theory &amp; Fundamentals</h1>
+<p>Built to answer your request directly: <em>use the Introduction's CS references to build the fundamental concepts
+of compressed sensing.</em> This file gives (1) the fundamentals with honest source-labeling, and (2) a graded
+<strong>reading path</strong> that starts from the author's own recommended CS references (§13 Reference Map).</p>
+<blockquote>
+<p><strong>Reality check up front:</strong> Toner 2025 <em>uses</em> CS (the temporal-subspace / PC-coefficient kind) but does <strong>not</strong>
+teach or cite CS theory. So "the fundamentals the author recommends" = the <strong>Arizona subspace-CS lineage</strong>
+(refs 22, 23, 21, 24, 18, 19). The <strong>abstract CS theory</strong> (RIP, incoherence, ℓ¹ recovery) comes from <em>outside</em>
+this paper (Lustig 2007; Candès–Romberg–Tao; Donoho) — labeled <strong>Background</strong> below.</p>
+</blockquote>
+<hr />
+<h2 id="1-the-three-ingredients-of-compressed-sensing-background-standard-cs-theory">1. The three ingredients of compressed sensing  (Background — standard CS theory)</h2>
+<p>CS recovers a signal from <strong>far fewer measurements than Nyquist</strong> when three conditions hold:</p>
+<ol>
+<li>🔵 <strong>Sparsity / compressibility.</strong> The signal <code>x</code> has a representation <code>x = Ψα</code> in some transform <code>Ψ</code>
+   (wavelets, temporal PCs, finite differences) where <code>α</code> has few large entries (<code>‖α‖₀ = k ≪ N</code>) or decays fast
+   (compressible). <em>In this paper:</em> the <strong>temporal</strong> decay across 32 TEs lives in a <code>P = 4</code>-dim SVD subspace
+   (Eq 4) — 99.96% of variance in 4 PCs. That is the sparsity CS exploits here.</li>
+<li>🔵 <strong>Incoherence.</strong> The sensing operator (Fourier sampling) must be incoherent with the sparsity basis, so
+   undersampling artifacts look like <strong>noise</strong>, not structured aliasing. <em>In this paper:</em> <strong>radial
+   pseudo-golden-angle</strong> sampling → incoherent, noise-like streaks (ideal for CS), and each TE sees different
+   angles → temporal incoherence.</li>
+<li>🔵 <strong>Nonlinear recovery.</strong> Solve a convex program that promotes sparsity:
+   <code>min_x ½‖Ax − y‖₂² + λ‖Ψx‖₁</code> (analysis) or <code>min_α ½‖AΨα − y‖₂² + λ‖α‖₁</code> (synthesis).</li>
+</ol>
+<p>🟢 <strong>Intuition:</strong> Nyquist says "sample at 2× the bandwidth." CS says "if the signal is sparse <em>and</em> your
+sampling is incoherent, a handful of random-ish measurements plus an ℓ¹ solve recovers it." Radial MRI is
+almost purpose-built for this: it's naturally incoherent and motion-robust.</p>
+<h2 id="2-why-l1-background">2. Why ℓ¹? (Background)</h2>
+<p>🟣 The ℓ⁰ "count the nonzeros" problem is NP-hard. ℓ¹ is its <strong>convex relaxation</strong> — the tightest convex norm
+that still promotes sparsity (the ℓ¹ ball's corners lie on the axes). Under the <strong>Restricted Isometry Property</strong>
+(RIP) — <code>A</code> nearly preserves norms of sparse vectors — ℓ¹ minimization <strong>provably</strong> recovers the ℓ⁰ solution.
+RIP is the theoretical guarantee; incoherence is the practical, checkable proxy.</p>
+<h2 id="3-sample-complexity-phase-transitions-background-relevant-to-your-open-questions">3. Sample complexity &amp; phase transitions (Background — relevant to your open questions)</h2>
+<p>🟡 CS theory predicts recovery needs <code>M ≳ k · log(N/k)</code> measurements. As you cross that boundary, recovery
+undergoes a <strong>sharp phase transition</strong> (Donoho–Tanner) — perfect below acceleration <code>R_c</code>, collapse above it.
+<strong>This is directly relevant to your Open Question #9 and the Table-1 "160→128 view cliff":</strong> the paper <em>empirically</em>
+finds 160 views is the sweet spot and performance drops at 128 — a phase-transition-flavored phenomenon, though
+the paper never frames it that way. A defensible PhD thread: <em>does the DL recon inherit a CS-like failure
+boundary, and can classical phase-transition theory predict it?</em> (See <code>11_RESEARCH_ROADMAP.md</code>, <code>14_OPEN_QUESTIONS.md</code>.)</p>
+<h2 id="4-the-subspace-low-rank-flavor-of-cs-this-paper-uses-source-cited-refs-22-23-24">4. The subspace / low-rank flavor of CS this paper uses  (Source-cited: refs 22, 23, 24)</h2>
+<p>This is the CS you actually need for Toner 2025:</p>
+<ul>
+<li>🟠 The T2 decay at each voxel follows a smooth (multi-)exponential governed by the <strong>SEPG signal model</strong>
+  (ref 24). Build a <strong>dictionary</strong> of plausible decay curves.</li>
+<li>🟣 <strong>SVD the dictionary</strong> → the decay space is nearly low-rank; keep the top <code>P = 4</code> singular vectors <code>U</code>.
+  Any TE time-series ≈ a linear combo of 4 temporal basis functions ⟹ <strong>temporal sparsity/low-rank</strong>.</li>
+<li>🟣 Reconstruct the <strong>PC coefficient maps</strong> (4 spatial maps) instead of 32 TE images — fewer unknowns, and CS/
+  low-rank regularization stabilizes the inverse (refs 22 "PC-coefficient CS", 23 "subspace + non-local low-rank").</li>
+<li>➡️ <strong>Toner 2025's move:</strong> put this exact subspace <code>U</code> (Eq 4) <em>inside</em> an unrolled DL network, and let a CNN
+  supply the regularizer instead of a hand-designed ℓ¹/low-rank prior. <strong>That is the CS→DL bridge of the paper.</strong></li>
+</ul>
+<h2 id="5-analysis-vs-synthesis-sparsity-fundamental-distinction">5. Analysis vs synthesis sparsity (fundamental distinction)</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>Synthesis</th>
+<th>Analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model</td>
+<td><code>x = Ψα</code>, penalize <code>‖α‖₁</code></td>
+<td>penalize <code>‖Ψx‖₁</code> directly</td>
+</tr>
+<tr>
+<td>Unknown</td>
+<td>coefficients <code>α</code></td>
+<td>image <code>x</code></td>
+</tr>
+<tr>
+<td>TV is...</td>
+<td>—</td>
+<td>an <strong>analysis</strong> prior (<code>Ψ = ∇</code>)</td>
+</tr>
+<tr>
+<td>This paper</td>
+<td>PC/subspace = a <strong>synthesis</strong>-flavored temporal model (<code>x</code> built from PC basis <code>U</code>)</td>
+<td>(spatial CNN prior is neither — it's <em>learned</em>)</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="6-where-the-fundamentals-live-vs-where-this-paper-lives">6. Where the fundamentals live vs. where this paper lives</h2>
+<pre><code>   CS THEORY (Background, NOT cited here)          THIS PAPER'S CS (Source-cited)
+   ─────────────────────────────────────           ──────────────────────────────
+   sparsity · incoherence · RIP · ℓ¹        →       temporal SVD subspace (P=4), radial incoherence
+   Lustig 2007 (Sparse MRI)                 →       Huang 2012 (ref 22, PC-coefficient CS)  ⭐
+   Candès/Donoho (recovery guarantees)      →       Mandava 2021 (ref 23, subspace + LLR)
+   Block 2007 (radial TV CS)                →       Altbach 2005 (ref 21, echo-sharing predecessor)
+   FISTA / ADMM (optimization)              →       replaced by learned unrolled DC (Eq 9)
+</code></pre>
+<hr />
+<h2 id="7-recommended-reading-path-graded">7. Recommended reading path (graded) 📌</h2>
+<p><strong>Tier 0 — the true CS fundamentals (do these first even though the paper skips them):</strong>
+1. <strong>Lustig, Donoho, Pauly 2007, <em>Sparse MRI</em></strong> (MRM 58:1182). The canonical CS-MRI paper. — <em>Background.</em>
+2. Candès–Romberg–Tao 2006 <strong>or</strong> Donoho 2006 for the recovery theorem + RIP intuition. — <em>Background.</em>
+3. Block, Uecker, Frahm 2007 — radial + TV CS-MRI (closest classical analog to RADTSE). — <em>Background.</em></p>
+<p><strong>Tier 1 — the author's own CS lineage (what the Introduction actually recommends, §13.A):</strong>
+4. <strong>Ref 22 — Huang 2012, PC-coefficient-map CS</strong> ⭐ (the keystone for this paper's subspace idea).
+5. Ref 24 — Lebel 2010, SEPG signal model (why the temporal subspace is low-dimensional).
+6. Ref 23 — Mandava 2021, subspace + non-local low-rank (the LLR baseline lineage).
+7. Refs 21, 18, 19 — echo-sharing predecessor + dictionary-matching T2 fitting.</p>
+<p><strong>Tier 2 — the CS→DL bridge (physics-driven unrolled nets):</strong>
+8. <strong>Ref 25 — Hammernik physics-driven-DL review</strong> (best survey).
+9. Ref 30 — VarNet; Ref 28 — deep cascade; Ref 43 — SSDU (self-supervision, Eq 12–13).</p>
+<p>👉 If you read only three things: <strong>Lustig 2007</strong> (fundamentals) → <strong>Huang 2012 / ref 22</strong> (this paper's CS) →
+<strong>Hammernik review / ref 25</strong> (how CS becomes DL). That trio takes you from CS first principles to exactly where
+Toner 2025 sits.</p>
+<p>✅ <strong>Mastery check for this file:</strong> (a) Name the three CS ingredients and give the RADTSE instance of each.
+(b) Explain why <code>P = 4</code> PCs is "temporal sparsity." (c) State which reference is the keystone CS paper <em>for this
+work</em> and which is the keystone CS paper <em>for the field</em> — and why they're different.</p>
+<div class="foot">Rendered from <code>05_COMPRESSED_SENSING_THEORY.md</code> · Toner et al., <em>Magn Reson Med</em> 2025;94:2475–2491 ·
+DOI 10.1002/mrm.70017</div>
+</div></body></html>

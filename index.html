@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toner 2025 CS-MRI/DL Study — Index</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]'],['$$','$$']] },
+                    options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root { --bg:#ffffff; --fg:#1a1a1a; --muted:#57606a; --border:#d0d7de; --code-bg:#f6f8fa;
+        --accent:#0969da; --th:#f6f8fa; --quote:#0969da; --quote-bg:#f6f8fa; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --fg:#e6edf3; --muted:#8b949e;
+        --border:#30363d; --code-bg:#161b22; --accent:#58a6ff; --th:#161b22; --quote:#58a6ff; --quote-bg:#161b22; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+.wrap { max-width:900px; margin:0 auto; padding:32px 20px 96px; }
+.nav { font-size:14px; margin-bottom:24px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+.nav a { color:var(--accent); text-decoration:none; }
+h1,h2,h3,h4 { line-height:1.25; margin-top:1.6em; }
+h1 { font-size:1.9em; border-bottom:1px solid var(--border); padding-bottom:.3em; }
+h2 { font-size:1.45em; border-bottom:1px solid var(--border); padding-bottom:.25em; }
+a { color:var(--accent); }
+code { background:var(--code-bg); padding:.15em .4em; border-radius:5px; font-size:.88em;
+        font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+pre { background:var(--code-bg); padding:14px 16px; border-radius:8px; overflow-x:auto;
+       border:1px solid var(--border); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid var(--quote);
+              background:var(--quote-bg); border-radius:0 6px 6px 0; color:var(--fg); }
+blockquote p { margin:.3em 0; }
+.tablewrap { overflow-x:auto; margin:1em 0; }
+table { border-collapse:collapse; width:100%; font-size:.9em; }
+th,td { border:1px solid var(--border); padding:7px 11px; text-align:left; vertical-align:top; }
+th { background:var(--th); }
+.math { overflow-x:auto; margin:1em 0; padding:6px 0; }
+hr { border:none; border-top:1px solid var(--border); margin:2em 0; }
+img { max-width:100%; }
+.foot { margin-top:64px; padding-top:16px; border-top:1px solid var(--border);
+         color:var(--muted); font-size:13px; }
+</style></head>
+<body><div class="wrap">
+<div class="nav">📚 <a href="index.html">Study index</a> &nbsp;·&nbsp; Toner 2025 — CS-MRI / Deep-Learning study</div>
+<h1>Toner 2025 — Compressed-Sensing MRI &amp; Deep-Learning Study Program</h1>
+<p>Interactive, source-grounded curriculum built around <strong>Toner et al., &ldquo;Accelerated free-breathing
+abdominal T2 mapping with deep learning reconstruction of radial turbo spin-echo data,&rdquo;
+<em>Magn Reson Med</em> 2025;94:2475&ndash;2491</strong> (DOI 10.1002/mrm.70017).</p>
+<h2>Study documents</h2>
+<ul><li><a href="00_SOURCE_AUDIT.html">00 — Source Manifest &amp; Document Audit</a> &nbsp;<code>00_SOURCE_AUDIT.md</code></li>
+<li><a href="01_EXECUTIVE_OVERVIEW.html">01 — Executive Overview (section-by-section)</a> &nbsp;<code>01_EXECUTIVE_OVERVIEW.md</code></li>
+<li><a href="02_EQUATION_REGISTER.html">02 — Equation Register (Toner 2025, Eq 1–13)</a> &nbsp;<code>02_EQUATION_REGISTER.md</code></li>
+<li><a href="05_COMPRESSED_SENSING_THEORY.html">05 — Compressed-Sensing Theory &amp; Fundamentals</a> &nbsp;<code>05_COMPRESSED_SENSING_THEORY.md</code></li>
+<li><a href="13_REFERENCE_MAP.html">13 — Reference Map (with a Compressed-Sensing reading path)</a> &nbsp;<code>13_REFERENCE_MAP.md</code></li>
+<li><a href="README.html">Toner 2025 — CS-MRI / Deep-Learning Study Program</a> &nbsp;<code>README.md</code></li></ul>
+<h2>Code</h2>
+<ul>
+<li><a href="code/mri_operators.py">code/mri_operators.py</a> &mdash; FFT / mask / forward &amp; adjoint operators (Stages 1&ndash;3). Adjoint test passes at 5.8e&minus;16.</li>
+<li><a href="tests/test_operators.py">tests/test_operators.py</a> &mdash; unit &amp; math tests.</li>
+</ul>
+<h2>Suggested read order</h2>
+<ol>
+<li>Source audit &rarr; executive overview</li>
+<li>Compressed-sensing theory + reference map (your CS fundamentals path)</li>
+<li>Equation register</li>
+<li>Run the code, then the research roadmap</li>
+</ol>
+<div class="foot">Rendered from <code>(index)</code> · Toner et al., <em>Magn Reson Med</em> 2025;94:2475–2491 ·
+DOI 10.1002/mrm.70017</div>
+</div></body></html>

@@ -1,0 +1,10 @@
+numpy>=1.24
+# later labs:
+# torch>=2.0
+# torchkbnufft
+# sigpy
+# matplotlib
+# scikit-image
+# h5py
+# pytest
+markdown>=3.5

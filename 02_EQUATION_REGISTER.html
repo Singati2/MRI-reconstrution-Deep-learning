@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>02 — Equation Register (Toner 2025, Eq 1–13)</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]'],['$$','$$']] },
+                    options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root { --bg:#ffffff; --fg:#1a1a1a; --muted:#57606a; --border:#d0d7de; --code-bg:#f6f8fa;
+        --accent:#0969da; --th:#f6f8fa; --quote:#0969da; --quote-bg:#f6f8fa; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --fg:#e6edf3; --muted:#8b949e;
+        --border:#30363d; --code-bg:#161b22; --accent:#58a6ff; --th:#161b22; --quote:#58a6ff; --quote-bg:#161b22; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+.wrap { max-width:900px; margin:0 auto; padding:32px 20px 96px; }
+.nav { font-size:14px; margin-bottom:24px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+.nav a { color:var(--accent); text-decoration:none; }
+h1,h2,h3,h4 { line-height:1.25; margin-top:1.6em; }
+h1 { font-size:1.9em; border-bottom:1px solid var(--border); padding-bottom:.3em; }
+h2 { font-size:1.45em; border-bottom:1px solid var(--border); padding-bottom:.25em; }
+a { color:var(--accent); }
+code { background:var(--code-bg); padding:.15em .4em; border-radius:5px; font-size:.88em;
+        font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+pre { background:var(--code-bg); padding:14px 16px; border-radius:8px; overflow-x:auto;
+       border:1px solid var(--border); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid var(--quote);
+              background:var(--quote-bg); border-radius:0 6px 6px 0; color:var(--fg); }
+blockquote p { margin:.3em 0; }
+.tablewrap { overflow-x:auto; margin:1em 0; }
+table { border-collapse:collapse; width:100%; font-size:.9em; }
+th,td { border:1px solid var(--border); padding:7px 11px; text-align:left; vertical-align:top; }
+th { background:var(--th); }
+.math { overflow-x:auto; margin:1em 0; padding:6px 0; }
+hr { border:none; border-top:1px solid var(--border); margin:2em 0; }
+img { max-width:100%; }
+.foot { margin-top:64px; padding-top:16px; border-top:1px solid var(--border);
+         color:var(--muted); font-size:13px; }
+</style></head>
+<body><div class="wrap">
+<div class="nav">📚 <a href="index.html">Study index</a> &nbsp;·&nbsp; Toner 2025 — CS-MRI / Deep-Learning study</div>
+<h1 id="02-equation-register-toner-2025-eq-113">02 — Equation Register (Toner 2025, Eq 1–13)</h1>
+<p>Every numbered equation, reproduced from the source, standardized, verified, and connected to MRI /
+optimization / deep learning. <strong>Convention flag (see Audit A2):</strong> the paper defines <code>A* := Aᴴ D</code> (density
+compensation <code>D</code> folded in), so the paper's <code>A*</code> is <strong>not</strong> the true adjoint <code>Aᴴ</code>. I mark where this matters.</p>
+<p><strong>Symbol key</strong></p>
+<pre><code class="language-text">x, x̄, x', x̂   image (generic / ground-truth / current network iterate / final estimate)   ∈ ℂ^{N·τ}
+y, yᵢ          measured radial k-space (all-TE / single echo time TEᵢ)                      ∈ ℂ^{M·ETL}, ℂ^{M}
+S              coil-sensitivity operator (multiply by C coil maps)
+𝒯ᵢ ≡ ℱᵢ        nonuniform FFT (NUFFT) for the radial samples of TEᵢ   (image → k-space)
+D, D̄           ramp density-compensation (all-TE size / single-TE size), diagonal ≥ 0
+U              SVD temporal-subspace compression  (TE images → PC images),  U ∈ ℂ^{(N·P)×(N·ETL)}
+A, A*          paper's forward / preconditioned-back-projection operators (see per-eq notes)
+ETL            echo-train length (= 32);  P            #principal components (= 4);  τ ∈ {1, P}
+N              #image pixels;  M            #radial k-space samples per echo;  C            #coils (→ 6 virtual)
+η              learned DC step size;   α∈[0,1]        ℓ¹/ℓ² loss balance (= ½)
+</code></pre>
+<hr />
+<h2 id="e1-radial-sampling-forward-model-single-echo-time">E1 — Radial sampling / forward model (single echo time)</h2>
+<p><strong>Source form</strong>  <code>yᵢ = 𝒯ᵢ S x̄ᵢ + εᵢ</code>  (Eq 1)</p>
+<p><strong>Standardized</strong>  <code>y_i = \mathcal{T}_i\, S\, \bar{x}_i + \epsilon_i,\quad i=1,\dots,\text{ETL}</code></p>
+<p><strong>Meaning</strong> — the measured radial k-space at echo time <code>TEᵢ</code> is: take the true TE image <code>x̄ᵢ</code>, apply coil
+sensitivities <code>S</code>, sample its Fourier transform on the radial trajectory of that TE (<code>𝒯ᵢ</code>), add noise <code>εᵢ</code>.</p>
+<p><strong>Dimensions</strong> — <code>x̄ᵢ ∈ ℂ^{N}</code>, <code>S : ℂ^{N} → ℂ^{N·C}</code>, <code>𝒯ᵢ : ℂ^{N·C} → ℂ^{M·C}</code>, <code>yᵢ ∈ ℂ^{M·C}</code>, <code>εᵢ ∈ ℂ^{M·C}</code>.
+(The paper writes <code>yᵢ ∈ ℂ^{M×1}</code> per coil; multi-coil stacks over <code>C</code>.)</p>
+<p><strong>Assumptions</strong> — linear MR signal model; known <code>S</code>; Gaussian(-ish) complex noise; each TE has its own
+well-distributed radial angles (pseudo-golden-angle) so <code>𝒯ᵢ</code> differs per <code>i</code>.</p>
+<p><strong>MRI interpretation</strong> — this <em>is</em> the physics: spin density → coil weighting → k-space encoding → sampling.
+Radial + golden-angle is what makes RADTSE motion-robust and per-TE incoherent.</p>
+<p><strong>Optimization interpretation</strong> — defines the data-fidelity operator; reconstruction inverts this map.</p>
+<p><strong>DL connection</strong> — this exact operator (and its adjoint) is baked into the <strong>data-consistency (DC) layer</strong>;
+the network never has to <em>learn</em> the physics — it is handed <code>𝒯ᵢ</code>, <code>S</code>.</p>
+<p><strong>Verification status</strong> — ✅ correct as written.</p>
+<hr />
+<h2 id="e2-composite-te-averaged-reconstruction">E2 — Composite (TE-averaged) reconstruction</h2>
+<p><strong>Source form</strong>  <code>x_comp = S* 𝒯*_comp D y</code>  (Eq 2)</p>
+<p><strong>Standardized</strong>  <code>x_{\text{comp}} = S^{*}\,\mathcal{T}^{*}_{\text{comp}}\, D\, y</code></p>
+<p><strong>Meaning</strong> — stack all TEs' k-space into one dataset <code>y</code>, density-compensate (<code>D</code>, a diagonal ramp that
+up-weights outer k-space to counter radial oversampling of the center), adjoint-NUFFT back to image space,
+coil-combine (<code>S*</code>). Result: a single high-SNR image at the <em>average</em> TE.</p>
+<p><strong>Dimensions</strong> — <code>y ∈ ℂ^{M·ETL·C}</code>, <code>D ∈ ℝ^{(M·ETL)×(M·ETL)}</code> (diag ≥ 0), <code>𝒯*_comp : ℂ^{M·ETL·C}→ℂ^{N·C}</code>,
+<code>S* : ℂ^{N·C}→ℂ^{N}</code>, <code>x_comp ∈ ℂ^{N}</code>.</p>
+<p><strong>Assumptions</strong> — combining across TEs is acceptable <em>for anatomy</em> (contrast is averaged, lost for T2 fitting).
+<code>D</code> makes <code>𝒯*_comp D</code> approximate a true inverse (gridding recon).</p>
+<p><strong>MRI interpretation</strong> — the "composite image": more views → fewer streaks → best anatomical image, at the cost
+of T2 information. Ramp DCF is the classic filtered-back-projection weighting.</p>
+<p><strong>DL connection</strong> — <code>x_comp</code> (or its zero-filled version) is the <strong>input</strong> to the composite network <code>f_comp</code>.</p>
+<p><strong>Verification status</strong> — ✅ correct under the density-compensated-adjoint (gridding) convention.</p>
+<hr />
+<h2 id="e3-per-te-image-reconstruction">E3 — Per-TE image reconstruction</h2>
+<p><strong>Source form</strong>  <code>xᵢ = S* 𝒯*ᵢ D̄ yᵢ</code>  (Eq 3)</p>
+<p><strong>Standardized</strong>  <code>x_i = S^{*}\,\mathcal{T}^{*}_i\, \bar{D}\, y_i</code></p>
+<p><strong>Meaning</strong> — reconstruct each TE image separately (<code>D̄</code> = single-TE version of <code>D</code>). Each <code>yᵢ</code> is highly
+undersampled (few views/TE), so <code>xᵢ</code> is streaky — this is exactly the problem the network fixes.</p>
+<p><strong>Dimensions</strong> — <code>yᵢ ∈ ℂ^{M·C}</code>, <code>D̄ ∈ ℝ^{M×M}</code>, <code>𝒯*ᵢ : ℂ^{M·C}→ℂ^{N·C}</code>, <code>xᵢ ∈ ℂ^{N}</code>.</p>
+<p><strong>MRI interpretation</strong> — the multicontrast time series <code>{xᵢ}_{i=1}^{ETL}</code> that gets voxel-wise fit to a T2 map
+via dictionary matching (SEPG signal model). Highly aliased when views/TE is small.</p>
+<p><strong>DL connection</strong> — <code>{xᵢ}</code> are the <strong>channels</strong> the TE/T2 network cleans up before projection to the subspace.</p>
+<p><strong>Verification status</strong> — ✅ correct (bar notation = single-TE slice of D, Audit A4).</p>
+<hr />
+<h2 id="e4-principal-component-subspace-model">E4 — Principal-component (subspace) model</h2>
+<p><strong>Source form</strong>  <code>Ux = U S* ℱ* D y</code>  (Eq 4)</p>
+<p><strong>Standardized</strong>  <code>U x = U\, S^{*}\,\mathcal{F}^{*}\, D\, y</code>  ⟹ PC images <code>= U · (per-TE recon)</code></p>
+<p><strong>Meaning</strong> — instead of <code>ETL = 32</code> TE channels, project onto the first <code>P = 4</code> SVD components of the SEPG
+signal dictionary. <code>U</code> maps the 32 TE images to 4 PC images that capture 99.96% of signal-decay variance.</p>
+<p><strong>Dimensions</strong> — <code>U ∈ ℂ^{(N·P)×(N·ETL)}</code>, <code>x ∈ ℂ^{N·ETL}</code> (stacked TE images), <code>Ux ∈ ℂ^{N·P}</code>.</p>
+<p><strong>Why it matters</strong> — (1) cuts compute/memory 32→4; (2) exploits temporal sparsity, exactly as in CS
+subspace reconstruction (refs 22, 23). This is the <strong>CS→DL bridge in one line</strong>: the learned network operates
+in a <em>compressed temporal subspace</em> motivated by classical CS.</p>
+<p><strong>Notation caveat</strong> — here <code>ℱ</code> is the same NUFFT called <code>𝒯</code> in E1–E3 (Audit A1).</p>
+<p><strong>Verification status</strong> — ✅ correct; note glyph switch 𝒯→ℱ.</p>
+<hr />
+<h2 id="e5-e6-unified-forward-adjoint-notation">E5 / E6 — Unified forward / adjoint notation</h2>
+<p><strong>Source form</strong>  <code>x' = A* D y</code>  (Eq 5)   <code>ŷ = A x'</code>  (Eq 6)</p>
+<p><strong>Standardized</strong>  <code>x' = A^{*} D y</code> (image estimate),  <code>\hat{y} = A x'</code> (project back to k-space)</p>
+<p><strong>Definitions (from text, p.2477):</strong>
+- Composite images: <code>A := 𝒯*_comp S</code>, <code>U = I</code>.
+- PC images: <code>A := ℱ* S U*</code>, <code>U</code> as in E4.
+- <strong>Convention (A2):</strong> thereafter <code>A* := Aᴴ D</code>, so <code>A</code>,<code>A*</code> are <em>not</em> true adjoints; <code>D</code> is used only in the
+  image direction (k-space→image), never in the forward (image→k-space) direction.</p>
+<p><strong>Meaning</strong> — a single symbol pair to describe <em>both</em> pipelines. <code>A*</code> (with <code>D</code>) = go from measured k-space to
+image; <code>A</code> = go from image to predicted k-space <code>ŷ</code>.</p>
+<p><strong>Optimization interpretation</strong> — <code>A</code>,<code>A*</code> are the forward/back operators inside every DC step (E7–E9) and the
+self-supervised loss (E12–E13).</p>
+<p><strong>DL connection</strong> — the whole point of physics-driven DL: the network is wrapped <em>around</em> fixed <code>A</code>,<code>A*</code>.
+🔍 <strong>For your code (Audit A2):</strong> implement a <strong>true</strong> <code>Aᴴ</code> that passes the dot-product test
+<code>⟨Ax, y⟩ ≈ ⟨x, Aᴴy⟩</code>, and <em>separately</em> a preconditioned <code>A*_paper = Aᴴ D</code>. Test the first; use the second in DC.</p>
+<p><strong>Verification status</strong> — ✅ correct <strong>only under the stated non-adjoint convention</strong> — flag when teaching.</p>
+<hr />
+<h2 id="e7-data-consistency-objective-per-cascade">E7 — Data-consistency objective (per cascade)</h2>
+<p><strong>Source form</strong>  <code>½ ‖ A_{CNN}^{(j)}(x'^{(j-1)}) − y ‖²</code>  (Eq 7)</p>
+<p><strong>Standardized</strong>  <code>\tfrac12\big\| A\, f_{\text{CNN}}^{(j)}\!\big(x'^{(j-1)}\big) - y \big\|_2^2</code></p>
+<p><strong>Meaning</strong> — after the <code>j</code>-th CNN block denoises the current image, measure how far its <em>predicted</em> k-space
+<code>A f_CNN(x')</code> is from the <em>acquired</em> k-space <code>y</code>. DC minimizes this.</p>
+<p><strong>Dimensions</strong> — <code>x'^{(j-1)} ∈ ℂ^{N·τ}</code> (τ = 1 composite, τ = P PC), <code>y ∈ ℂ^{M·ETL·C}</code>.</p>
+<p><strong>Optimization interpretation</strong> — the quadratic data term of the unrolled variational problem; the CNN supplies
+the (learned, implicit) regularizer.</p>
+<p><strong>Verification status</strong> — ✅ correct.</p>
+<hr />
+<h2 id="e8-gradient-of-the-dc-objective">E8 — Gradient of the DC objective</h2>
+<p><strong>Source form</strong>  <code>d/dx̂'^{(j)} [ ½‖Ax̂'^{(j)} − y‖² ] = A*(Ax̂'^{(j)} − y)</code>  (Eq 8)</p>
+<p><strong>Standardized</strong>  <code>\nabla_{\hat{x}'^{(j)}}\Big[\tfrac12\|A\hat{x}'^{(j)}-y\|_2^2\Big] = A^{*}\big(A\hat{x}'^{(j)} - y\big)</code></p>
+<p><strong>Derivation</strong> — <code>f(x)=½‖Ax−y‖²</code>. For complex <code>x</code>, the Wirtinger gradient is <code>∇f = Aᴴ(Ax−y)</code>. The paper writes
+<code>A*</code> which under convention A2 is <code>AᴴD</code> ⟹ this is a <strong>preconditioned</strong> gradient, not the exact one.</p>
+<p><strong>MRI interpretation</strong> — residual in k-space <code>(Ax̂'−y)</code> pushed back to image space and used to correct the image.</p>
+<p><strong>DL connection</strong> — this is the gradient the DC layer descends; because <code>η</code> is learned (E9), backprop can absorb
+the <code>D</code> preconditioner, so the swap is harmless in practice (Audit A8).</p>
+<p><strong>Verification status</strong> — ✅ correct as a <strong>preconditioned</strong> gradient under convention A2. (Exact gradient with a
+true adjoint would drop <code>D</code>.)</p>
+<hr />
+<h2 id="e9-data-consistency-update-learned-gradient-descent">E9 — Data-consistency update (learned gradient descent)</h2>
+<p><strong>Source form</strong>  <code>x''^{(j)} = DC^{(j)}(x̂'^{(j)}) = x̂'^{(j)} − η A*(A x̂'^{(j)} − y)</code>  (Eq 9)</p>
+<p><strong>Standardized</strong>  <code>x''^{(j)} = \hat{x}'^{(j)} - \eta\, A^{*}\big(A\hat{x}'^{(j)} - y\big)</code>,  with <code>x̂'^{(j)} := f_{\text{CNN}}^{(j)}(x'^{(j-1)})</code>, <code>x'^{(0)} = A* y</code></p>
+<p><strong>Meaning</strong> — one gradient-descent step toward data consistency after each CNN denoise. <code>η</code> is a <strong>trainable</strong>
+scalar step size learned by backprop. <code>K = 5</code> such CNN→DC cascades.</p>
+<p><strong>This is the heart of the paper.</strong> Compare directly to proximal gradient / ISTA:</p>
+<pre><code>ISTA:              x^{k+1} = prox_{γλR}( x^k − γ Aᴴ(Ax^k − y) )
+Unrolled (E9):     x^{k+1} = DC^{(k)}( f_CNN^{(k)}(x^k) )     ← CNN replaces prox, learned η replaces γ
+</code></pre>
+<p>The CNN plays the role of the proximal operator of an <em>implicit, learned</em> regularizer; DC enforces the physics.</p>
+<p><strong>DL connection</strong> — a textbook <strong>model-based DL / unrolled-optimization</strong> block (MoDL/VarNet family, refs 25–30).
+Weights may be shared or per-cascade; here <code>η</code> is learned.</p>
+<p><strong>Verification status</strong> — ✅ correct (learned-step preconditioned gradient descent).</p>
+<hr />
+<h2 id="e10-composite-network-supervised">E10 — Composite network (supervised)</h2>
+<p><strong>Source form</strong>  <code>x̂ = f_comp(y', S)</code>  (Eq 10)</p>
+<p><strong>Standardized</strong>  <code>\hat{x} = f_{\text{comp}}(y', S)</code>   (<code>y'</code> = zero-filled data, <code>S</code> = coil maps)</p>
+<p><strong>Meaning</strong> — the composite (anatomy) network maps zero-filled undersampled data + coil maps to a clean
+composite image. Trainable in a <strong>fully supervised</strong> way because a well-sampled composite target <em>exists</em>.</p>
+<p><strong>Verification status</strong> — ✅ correct.</p>
+<hr />
+<h2 id="e11-supervised-image-space-loss-composite">E11 — Supervised image-space loss (composite)</h2>
+<p><strong>Source form</strong>  <code>L_x(x̂,x) = α ‖x̂−x‖₁/‖x‖₁ + (1−α) ‖x̂−x‖₂/‖x‖₂</code>  (Eq 11)</p>
+<p><strong>Standardized</strong>  <code>\mathcal{L}_x(\hat{x},x)=\alpha\dfrac{\|\hat{x}-x\|_1}{\|x\|_1}+(1-\alpha)\dfrac{\|\hat{x}-x\|_2}{\|x\|_2},\quad \alpha=\tfrac12</code></p>
+<p><strong>Meaning</strong> — scale-invariant blend of relative ℓ¹ (sharp/robust) and relative ℓ² (smooth) image error.
+Normalizing by <code>‖x‖</code> makes the loss invariant to overall image scale.</p>
+<p><strong>Statistical note (Expert E)</strong> — mixing ℓ¹/ℓ² is a robustness/MAP-flavored choice, <em>not</em> an unbiased estimator
+of anything in particular; treat the 50/50 split as a tuned hyperparameter (Audit A9).</p>
+<p><strong>Verification status</strong> — ✅ correct.</p>
+<hr />
+<h2 id="e12-self-supervised-k-space-projection-tet2-network">E12 — Self-supervised k-space projection (TE/T2 network)</h2>
+<p><strong>Source form</strong>  <code>ŷ = A f_{T2}(y', S)</code>  (Eq 12)</p>
+<p><strong>Standardized</strong>  <code>\hat{y} = A\, f_{T2}(y', S)</code></p>
+<p><strong>Meaning</strong> — for T2 mapping there is <strong>no</strong> clean target (views/TE ≤ 12, no well-sampled reference). So the
+network output <code>f_T2(y')</code> is projected <em>back to k-space</em> by <code>A</code>, and the loss is computed <strong>in k-space</strong> against
+the acquired data <code>y</code>. This is a self-supervised, physics-consistency loss.</p>
+<p><strong>Contrast with SSDU (ref 43)</strong> — vanilla SSDU splits k-space into disjoint <em>input</em> and <em>loss</em> sets. Here the
+loss is computed over the <strong>entire</strong> acquired <code>y</code> (not a disjoint held-out subset) "to further enforce data
+consistency." 🔴 Common-mistake flag: this weakens the leakage protection SSDU was designed for — see Audit note
+and Comparison #18 (supervised vs self-supervised). Worth interrogating for your own work.</p>
+<p><strong>Verification status</strong> — ✅ correct as stated; ⚠️ the "loss over entire y" choice is a design decision to scrutinize.</p>
+<hr />
+<h2 id="e13-self-supervised-k-space-loss-tet2">E13 — Self-supervised k-space loss (TE/T2)</h2>
+<p><strong>Source form</strong>  <code>L_y(ŷ,y) = α ‖ŷ−y‖₁/‖y‖₁ + (1−α) ‖ŷ−y‖₂/‖y‖₂</code>  (Eq 13)</p>
+<p><strong>Standardized</strong>  <code>\mathcal{L}_y(\hat{y},y)=\alpha\dfrac{\|\hat{y}-y\|_1}{\|y\|_1}+(1-\alpha)\dfrac{\|\hat{y}-y\|_2}{\|y\|_2},\quad \alpha=\tfrac12</code></p>
+<p><strong>Meaning</strong> — same relative ℓ¹/ℓ² blend as E11 but in <strong>k-space</strong>. Minimizing k-space error is the only training
+signal for the T2 pathway. Note (2.5): T2 error is <em>not</em> in the loss — it is used only for <strong>model selection</strong>
+(pick the epoch with lowest ROI T2 error on the validation set).</p>
+<p><strong>Verification status</strong> — ✅ correct.</p>
+<hr />
+<h2 id="importance-ranking-for-your-phd-accelerated-cs-dl-mri">Importance ranking for <em>your</em> PhD (accelerated CS + DL MRI)</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Rank</th>
+<th>Eqs</th>
+<th>Why it matters most for you</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>E9 (+E7,E8)</strong></td>
+<td>The unrolled DC step — the literal CS→DL bridge; ISTA/FISTA with a learned prox. Master this first.</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>E5/E6 + A2</strong></td>
+<td>The forward/adjoint convention. Everything (DC, self-supervision) rides on getting <code>A</code>,<code>Aᴴ</code> right.</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>E1</strong></td>
+<td>The MRI forward model. If you can't derive/implement <code>A</code> and its true <code>Aᴴ</code>, nothing downstream is trustworthy.</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>E4</strong></td>
+<td>Temporal-subspace (SVD/PC) compression — classical CS sparsity reused inside a DL net.</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>E12/E13</strong></td>
+<td>Self-supervision without ground truth — directly relevant to "can we train recon without fully-sampled data."</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>E11</strong></td>
+<td>Loss design / scale-invariance — the statistical-validity surface.</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>E2/E3/E10</strong></td>
+<td>Composite vs per-TE recon — the anatomy-vs-quantitative split.</td>
+</tr>
+</tbody>
+</table></div>
+<div class="foot">Rendered from <code>02_EQUATION_REGISTER.md</code> · Toner et al., <em>Magn Reson Med</em> 2025;94:2475–2491 ·
+DOI 10.1002/mrm.70017</div>
+</div></body></html>

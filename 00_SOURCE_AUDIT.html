@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>00 — Source Manifest &amp; Document Audit</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]'],['$$','$$']] },
+                    options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root { --bg:#ffffff; --fg:#1a1a1a; --muted:#57606a; --border:#d0d7de; --code-bg:#f6f8fa;
+        --accent:#0969da; --th:#f6f8fa; --quote:#0969da; --quote-bg:#f6f8fa; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --fg:#e6edf3; --muted:#8b949e;
+        --border:#30363d; --code-bg:#161b22; --accent:#58a6ff; --th:#161b22; --quote:#58a6ff; --quote-bg:#161b22; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+.wrap { max-width:900px; margin:0 auto; padding:32px 20px 96px; }
+.nav { font-size:14px; margin-bottom:24px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+.nav a { color:var(--accent); text-decoration:none; }
+h1,h2,h3,h4 { line-height:1.25; margin-top:1.6em; }
+h1 { font-size:1.9em; border-bottom:1px solid var(--border); padding-bottom:.3em; }
+h2 { font-size:1.45em; border-bottom:1px solid var(--border); padding-bottom:.25em; }
+a { color:var(--accent); }
+code { background:var(--code-bg); padding:.15em .4em; border-radius:5px; font-size:.88em;
+        font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+pre { background:var(--code-bg); padding:14px 16px; border-radius:8px; overflow-x:auto;
+       border:1px solid var(--border); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid var(--quote);
+              background:var(--quote-bg); border-radius:0 6px 6px 0; color:var(--fg); }
+blockquote p { margin:.3em 0; }
+.tablewrap { overflow-x:auto; margin:1em 0; }
+table { border-collapse:collapse; width:100%; font-size:.9em; }
+th,td { border:1px solid var(--border); padding:7px 11px; text-align:left; vertical-align:top; }
+th { background:var(--th); }
+.math { overflow-x:auto; margin:1em 0; padding:6px 0; }
+hr { border:none; border-top:1px solid var(--border); margin:2em 0; }
+img { max-width:100%; }
+.foot { margin-top:64px; padding-top:16px; border-top:1px solid var(--border);
+         color:var(--muted); font-size:13px; }
+</style></head>
+<body><div class="wrap">
+<div class="nav">📚 <a href="index.html">Study index</a> &nbsp;·&nbsp; Toner 2025 — CS-MRI / Deep-Learning study</div>
+<h1 id="00-source-manifest-document-audit">00 — Source Manifest &amp; Document Audit</h1>
+<blockquote>
+<p>⚠️ <strong>Source correction (traceable):</strong> The prompt named
+<code>/home/mpcrlab/Desktop/cs_techniques_toner2025.html</code>. That file does <strong>not exist</strong> on this machine.
+The audited source is the <strong>PDF</strong> you confirmed:
+<code>~/Desktop/Magnetic Resonance in Med - 2025 - Toner - Accelerated free‐breathing abdominal T2 mapping with deep learning.pdf</code>
+Because the source is a PDF (not HTML), the "HTML-rendering artifact / empty-box / broken-LaTeX"
+parts of the audit are replaced by <strong>PDF text-extraction</strong> concerns. Everything below was read
+directly from the 17-page PDF.</p>
+</blockquote>
+<hr />
+<h2 id="1-source-manifest-23-step-3">1. Source Manifest (§23 Step 3)</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Title</strong></td>
+<td>Accelerated free-breathing abdominal T2 mapping with deep learning reconstruction of radial turbo spin-echo data</td>
+</tr>
+<tr>
+<td><strong>Authors</strong></td>
+<td>B. Toner, S. Arberet, S. Zhang, F. Han, E. Ahanonu, U. Goerke, K. Johnson, Z. Abouelfetouh, I. Codreanu, S. Sridhar, H. Arif-Tiwari, V. Deshpande, D. R. Martin, M. Nadar, M. I. Altbach, A. Bilgin</td>
+</tr>
+<tr>
+<td><strong>Corresponding</strong></td>
+<td>Ali Bilgin, Program in Applied Mathematics, University of Arizona (bilgin@arizona.edu)</td>
+</tr>
+<tr>
+<td><strong>Journal</strong></td>
+<td><em>Magnetic Resonance in Medicine</em> 2025;94:2475–2491</td>
+</tr>
+<tr>
+<td><strong>DOI</strong></td>
+<td>10.1002/mrm.70017</td>
+</tr>
+<tr>
+<td><strong>Type</strong></td>
+<td>Research Article (open access, Creative Commons)</td>
+</tr>
+<tr>
+<td><strong>Dates</strong></td>
+<td>Received 12 May 2025; Revised 22 June 2025; Accepted 15 July 2025</td>
+</tr>
+<tr>
+<td><strong>Code</strong></td>
+<td>https://github.com/UA-MRI/radtse-dl-recon.git (public)</td>
+</tr>
+<tr>
+<td><strong>Data</strong></td>
+<td>Human MRI data <strong>not</strong> approved for public sharing (code only)</td>
+</tr>
+<tr>
+<td><strong>Sections</strong></td>
+<td>1 Intro · 2 Methods (2.1 RADTSE acq/recon, 2.2 Network, 2.3 Training, 2.4 Dataset, 2.5 T2-error validation, 2.6 T2 quantification, 2.7 Anatomical-image error, 2.8 Prospective data, 2.9 System/code) · 3 Results (3.1 T2 quant, 3.2 Anatomical error, 3.3 Prospective, 3.4 Pathology) · 4 Discussion · 5 Conclusion</td>
+</tr>
+<tr>
+<td><strong>Equations</strong></td>
+<td>13 numbered (Eq 1–13)</td>
+</tr>
+<tr>
+<td><strong>Figures</strong></td>
+<td>8 (Fig 1 acq/recon overview; Fig 2 network + training schemes; Fig 3 T2 correlation + maps; Fig 4 sample TE image + error maps; Fig 5 composite images; Fig 6 prospective composite/TE/T2; Fig 7 all-slice coverage; Fig 8 pathology cases)</td>
+</tr>
+<tr>
+<td><strong>Tables</strong></td>
+<td>2 (Table 1 mean relative T2 error % by organ × acceleration; Table 2 voxel-wise ℓ¹/ℓ²/PSNR for TE &amp; composite)</td>
+</tr>
+<tr>
+<td><strong>References</strong></td>
+<td>48</td>
+</tr>
+<tr>
+<td><strong>Supporting Info</strong></td>
+<td>Data S1 (ablation study; not in the main PDF — <strong>not accessible to this audit</strong>)</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="key-quantitative-facts-as-stated-in-source-for-grounding-do-not-misquote">Key quantitative facts (as stated in source — for grounding, do not misquote)</h3>
+<ul>
+<li><strong>Cohort:</strong> 121 volunteers, two 3T sites (MAGNETOM Skyra, MAGNETOM Vida, Siemens). 85 train / 9 val / 27 test.</li>
+<li><strong>Protocol:</strong> 28 axial slices, 6 mm, 0.78 mm (13%) gap → 189.06 mm coverage. ETL = 32. Echo spacing 8.1 ms (Skyra) / 8.46 ms (Vida). Flip 150°. TR = 1 respiratory cycle. FoV 380×380 mm². <strong>384 radial views</strong>, 512 readout points, 2× readout oversampling; reconstructed at matrix 320×320. Fat sat via CHESS.</li>
+<li><strong>Coils:</strong> compressed to <strong>6 virtual coils</strong> via SVD.</li>
+<li><strong>Subspace:</strong> <strong>P &lt; ETL</strong> principal components; <strong>P = 4</strong> PCs used (first 4 PCs = 99.96% explained variance).</li>
+<li><strong>Training undersampling:</strong> random <code>r ∈ {2,…,8}</code> echo trains kept out of 12 → acceleration <strong>1.5–6×</strong>.</li>
+<li><strong>Network:</strong> <strong>K = 5</strong> cascades, <strong>L = 5</strong> conv layers/CNN block, kernel 3×3, 64 hidden channels, ReLU modified for complex weights, NAdam, cosine-annealed LR (init 1e−4). Composite net 450 epochs; TE/T2 net 150 epochs. Batch 1–4.</li>
+<li><strong>Reconstruction time:</strong> ≈ <strong>1 s/slice</strong> (DL) vs &gt; 30 min/slice (LLR).</li>
+<li><strong>Headline:</strong> full-liver free-breathing coverage from <strong>160 total views (5 views/TE)</strong> in <strong>&lt; 3 min</strong> (mean 2:57).</li>
+<li><strong>Key result:</strong> <strong>160 views is the sweet spot</strong> — performance drops going 160 → 128 views.</li>
+<li><strong>Baselines compared:</strong> adjoint NUFFT, Locally Low Rank (LLR) iterative (ref 22), proposed DL.</li>
+</ul>
+<hr />
+<h2 id="2-document-audit-table-4">2. Document Audit Table (§4)</h2>
+<blockquote>
+<p>Labels: <strong>Confirmed error · Probable error · Formatting/rendering · Notation inconsistency · Ambiguity · Pedagogical weakness · No issue.</strong>
+No file was altered during this audit (§4 requirement).</p>
+</blockquote>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Item</th>
+<th>Location</th>
+<th>Status</th>
+<th>Problem</th>
+<th>Recommended correction</th>
+<th>Confidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A1</td>
+<td>NUFFT symbol switches from 𝒯 to ℱ</td>
+<td>Eq (1)–(3) use <code>𝒯ᵢ</code>/<code>𝒯*_comp</code>; Eq (4)–(6) use <code>ℱ</code>/<code>ℱ*</code></td>
+<td><strong>Notation inconsistency</strong></td>
+<td>The nonuniform FFT operator is written <code>𝒯</code> in the sampling equations but <code>ℱ</code> once the PC model is introduced. Same operator, two glyphs.</td>
+<td>Standardize to one symbol (e.g. <code>F</code> for the (nonuniform) Fourier encoding) throughout, or explicitly state <code>ℱ ≡ 𝒯</code>.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>A2</td>
+<td><code>A</code> / <code>A*</code> deliberately <strong>not</strong> true adjoints</td>
+<td>p.2477–2478, after Eq (6): "we will assume <code>A* := A*D</code> … <code>A</code> and <code>A*</code> are no longer true adjoints under this convention"</td>
+<td><strong>Ambiguity (author-acknowledged)</strong></td>
+<td>The density-compensation <code>D</code> is folded into the "adjoint" so <code>A*</code> is a <em>preconditioned</em> back-projection, not the mathematical adjoint. A reader running an inner-product adjoint test on the paper's <code>A</code>,<code>A*</code> will see it <strong>fail by design</strong>.</td>
+<td>Not an error — but for your own code, keep a <em>true</em> adjoint <code>Aᴴ</code> (passes the dot-product test) separate from the paper's preconditioned <code>A*=AᴴD</code>. See Equation Register E5/E6.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>A3</td>
+<td><code>F</code>/<code>F*</code> orientation vs. Eq (4)</td>
+<td><code>A := ℱ*SU*</code> (PC case, p.2477) vs. Eq (4) <code>Ux = US*ℱ*Dy</code></td>
+<td><strong>Ambiguity</strong></td>
+<td>Which of <code>ℱ</code>,<code>ℱ*</code> is the image→k-space direction is easy to lose track of because <code>A</code> (the <em>forward</em> op, image→k-space) is defined with a starred <code>ℱ*</code>. Consistent only once you accept the A2 convention (D absorbed, adjoints relabeled).</td>
+<td>State the direction of every operator once in a table (image→kspace vs kspace→image). Handled in E-register.</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>A4</td>
+<td><code>D</code> vs <code>D̄</code></td>
+<td>Eq (2) uses full <code>D ∈ ℝ^{(M·ETL)×(M·ETL)}</code>; Eq (3) uses <code>D̄ ∈ ℝ^{M×M}</code></td>
+<td><strong>No issue (well-defined)</strong></td>
+<td>Two ramp density-compensation operators of different sizes (all-TE vs single-TE). Correctly distinguished in text.</td>
+<td>None — just note the bar means "single-TE slice of D."</td>
+<td>High</td>
+</tr>
+<tr>
+<td>A5</td>
+<td><code>x̄ᵢ</code> (ground truth) vs <code>x'</code> (network image) vs <code>x̂</code> (estimate)</td>
+<td>Eq (1) <code>x̄ᵢ</code>; Eq (5)–(9) <code>x'</code>; Eq (10)/(11) <code>x̂</code></td>
+<td><strong>Pedagogical weakness</strong></td>
+<td>Three decorations of <code>x</code> (bar, prime, hat) carry distinct meanings (ground truth / current-iterate PC-or-composite image / final estimate) but the distinction is never tabulated. Easy to conflate.</td>
+<td>Keep a symbol table (provided in Glossary). Not an error.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>A6</td>
+<td>Subspace dimension symbol <code>P</code> vs <code>τ</code></td>
+<td><code>P</code> = #PCs (2.2, 2.4); DC block text uses <code>τ</code> ("τ = 1 for composite, τ = P for PC")</td>
+<td><strong>Notation inconsistency (minor)</strong></td>
+<td><code>τ</code> is introduced only in the Fig 2 caption / Eq (7)–(9) region as the channel count; it equals 1 or <code>P</code>. Reader may not connect <code>τ</code> to <code>P</code>.</td>
+<td>State <code>τ ∈ {1, P}</code> explicitly at first use.</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>A7</td>
+<td>"adjoint NUFFT" used as <em>reference/ground truth</em> for anatomical error</td>
+<td>2.7, 3.2, Table 2</td>
+<td><strong>Pedagogical weakness / methodological caveat</strong></td>
+<td>The 8192-view <strong>adjoint-NUFFT</strong> reconstruction is treated as the gold standard for TE-image error, but adjoint NUFFT ≠ true inverse (it is a density-compensated back-projection). Errors are <em>relative to a non-ideal reference</em>. The authors are aware (they call it "gold standard" only for the 8192-view case).</td>
+<td>For your reading: interpret Table 2 numbers as agreement-with-a-strong-reference, not agreement-with-truth.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>A8</td>
+<td>Eq (8) chain-rule result</td>
+<td><code>d/dx̂'⁽ʲ⁾ [½‖Ax̂'⁽ʲ⁾−y‖²] = A*(Ax̂'⁽ʲ⁾−y)</code></td>
+<td><strong>Correct under A2 convention</strong></td>
+<td>With a <em>true</em> adjoint the gradient is <code>Aᴴ(Ax−y)</code>; the paper writes <code>A*</code> which under their convention is <code>AᴴD</code>. So the "gradient" is a <em>preconditioned</em> gradient, not the exact one.</td>
+<td>Fine for a learned step-size <code>η</code> (backprop absorbs the preconditioner), but flag it: Eq (9) is preconditioned gradient descent, not vanilla GD.</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>A9</td>
+<td><code>α</code> set to ½</td>
+<td>Eq (11), Eq (13): "α ∈ [0,1] … (set to ½)"</td>
+<td><strong>No issue</strong></td>
+<td>Balances ℓ¹ and ℓ² terms equally. Clearly stated.</td>
+<td>None.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>A10</td>
+<td>Loss normalization</td>
+<td>Eq (11)/(13) divide by <code>‖x‖₁</code>,<code>‖x‖₂</code> / <code>‖y‖₁</code>,<code>‖y‖₂</code></td>
+<td><strong>No issue (worth noting)</strong></td>
+<td>Relative (scale-invariant) loss. Good practice, but means the loss magnitude is not comparable across normalization schemes.</td>
+<td>Note the [0,1] magnitude normalization step (2.4) that precedes it.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>A11</td>
+<td>Prospective data has <strong>no</strong> voxel-wise ground truth</td>
+<td>2.8, 3.3</td>
+<td><strong>No issue (correctly caveated)</strong></td>
+<td>Prospective results are qualitative only (no retrospective reference). Authors state this.</td>
+<td>Don't quote prospective numbers as accuracy.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>A12</td>
+<td>Supporting Information (ablation) not in main PDF</td>
+<td>"SUPPORTING INFORMATION: Data S1"</td>
+<td><strong>Inaccessible element</strong></td>
+<td>The ablation study (network-size, hyperparameters) lives only in the online SI, which is not in this file. Any claim about ablations is <strong>Needs verification</strong> against the SI.</td>
+<td>Fetch Data S1 from the publisher if you want the ablation details.</td>
+<td>High</td>
+</tr>
+<tr>
+<td>A13</td>
+<td>PDF ligature extraction (<code>ﬂ</code>, <code>ﬁ</code>)</td>
+<td>throughout</td>
+<td><strong>Formatting/rendering</strong></td>
+<td>The PDF uses typographic ligatures ("ﬂexible", "ﬁt"); some extractors mangle these. Cosmetic only, no scientific impact.</td>
+<td>Ignore.</td>
+<td>High</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="audit-summary">Audit summary</h3>
+<ul>
+<li><strong>Confirmed errors:</strong> none.</li>
+<li><strong>Probable errors:</strong> none.</li>
+<li><strong>Notation inconsistencies:</strong> A1 (𝒯↔ℱ), A6 (P↔τ) — cosmetic, do not change results.</li>
+<li><strong>Ambiguities (author-acknowledged):</strong> A2, A3, A8 — the <code>A*:=AᴴD</code> convention. Important to understand, not a mistake.</li>
+<li><strong>Pedagogical weaknesses:</strong> A5, A7 — symbol decorations &amp; non-ideal reference.</li>
+<li><strong>Inaccessible:</strong> A12 (Supporting Information ablation).</li>
+</ul>
+<p><strong>Bottom line:</strong> the paper is mathematically clean. The single most important thing to internalize is the <strong>A2 convention</strong> — the paper's <code>A*</code> is a <em>density-compensated back-projection</em>, not a true adjoint. This is standard in the physics-driven-DL literature but trips up first readers, and it is why an adjoint dot-product test on the paper's operators "fails" (it is supposed to). Your own code should keep the mathematically-true <code>Aᴴ</code> for testing separate from the preconditioned <code>A*</code> used in the DC step.</p>
+<div class="foot">Rendered from <code>00_SOURCE_AUDIT.md</code> · Toner et al., <em>Magn Reson Med</em> 2025;94:2475–2491 ·
+DOI 10.1002/mrm.70017</div>
+</div></body></html>

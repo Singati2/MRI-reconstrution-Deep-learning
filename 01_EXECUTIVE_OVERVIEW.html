@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>01 — Executive Overview (section-by-section)</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]'],['$$','$$']] },
+                    options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root { --bg:#ffffff; --fg:#1a1a1a; --muted:#57606a; --border:#d0d7de; --code-bg:#f6f8fa;
+        --accent:#0969da; --th:#f6f8fa; --quote:#0969da; --quote-bg:#f6f8fa; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --fg:#e6edf3; --muted:#8b949e;
+        --border:#30363d; --code-bg:#161b22; --accent:#58a6ff; --th:#161b22; --quote:#58a6ff; --quote-bg:#161b22; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+.wrap { max-width:900px; margin:0 auto; padding:32px 20px 96px; }
+.nav { font-size:14px; margin-bottom:24px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+.nav a { color:var(--accent); text-decoration:none; }
+h1,h2,h3,h4 { line-height:1.25; margin-top:1.6em; }
+h1 { font-size:1.9em; border-bottom:1px solid var(--border); padding-bottom:.3em; }
+h2 { font-size:1.45em; border-bottom:1px solid var(--border); padding-bottom:.25em; }
+a { color:var(--accent); }
+code { background:var(--code-bg); padding:.15em .4em; border-radius:5px; font-size:.88em;
+        font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+pre { background:var(--code-bg); padding:14px 16px; border-radius:8px; overflow-x:auto;
+       border:1px solid var(--border); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid var(--quote);
+              background:var(--quote-bg); border-radius:0 6px 6px 0; color:var(--fg); }
+blockquote p { margin:.3em 0; }
+.tablewrap { overflow-x:auto; margin:1em 0; }
+table { border-collapse:collapse; width:100%; font-size:.9em; }
+th,td { border:1px solid var(--border); padding:7px 11px; text-align:left; vertical-align:top; }
+th { background:var(--th); }
+.math { overflow-x:auto; margin:1em 0; padding:6px 0; }
+hr { border:none; border-top:1px solid var(--border); margin:2em 0; }
+img { max-width:100%; }
+.foot { margin-top:64px; padding-top:16px; border-top:1px solid var(--border);
+         color:var(--muted); font-size:13px; }
+</style></head>
+<body><div class="wrap">
+<div class="nav">📚 <a href="index.html">Study index</a> &nbsp;·&nbsp; Toner 2025 — CS-MRI / Deep-Learning study</div>
+<h1 id="01-executive-overview-section-by-section">01 — Executive Overview (section-by-section)</h1>
+<p><strong>Paper:</strong> Toner et al., "Accelerated free-breathing abdominal T2 mapping with deep learning reconstruction of
+radial turbo spin-echo data," <em>Magn Reson Med</em> 2025;94:2475–2491. DOI 10.1002/mrm.70017.</p>
+<h2 id="one-paragraph-thesis">One-paragraph thesis</h2>
+<p>RADTSE (radial turbo spin-echo) with respiratory-triggered PACE acquires a co-registered multicontrast TE
+time-series in a single free-breathing scan, from which a voxel-wise T2 map is fit. The catch: to accelerate,
+you acquire few radial views per TE, so per-TE images are badly aliased. The authors train a <strong>cascaded unrolled
+network with data-consistency layers</strong> (physics-driven DL) in two flavors — a <strong>supervised composite network</strong>
+for anatomical T2-weighted images, and a <strong>self-supervised subspace-constrained network</strong> for the T2 maps
+(no clean target exists). Result: full-liver coverage from <strong>160 views (5 views/TE)</strong> in <strong>&lt; 3 min</strong>, ~<strong>1 s/slice</strong>
+reconstruction, lower T2 error and more stable behavior under acceleration than adjoint NUFFT and Locally-Low-Rank CS.</p>
+<hr />
+<h2 id="1-introduction-what-problem-why-hard">§1 Introduction — what problem, why hard</h2>
+<ul>
+<li><strong>Clinical need:</strong> quantitative abdominal T2 mapping is more reproducible than qualitative T2w, useful for
+  differentiating normal/abnormal tissue, lesions, cancer.</li>
+<li><strong>Why hard:</strong> Cartesian SE/TSE/EPI trade temporal vs spatial resolution; breath-holds limit coverage;
+  navigator/PACE free-breathing costs long scan time. Few-TE methods hurt T2 accuracy. GRAPPATINI limited slices.</li>
+<li><strong>RADTSE (refs 17–19):</strong> radial → motion-robust, high spatiotemporal resolution, fittable voxel-wise T2.
+  PACE (ref 20) gives free-breathing at the cost of scan time.</li>
+<li><strong>Prior acceleration:</strong> echo-sharing (spurious T2), CS with temporal correlations (slow recon).</li>
+<li><strong>Prior DL for RADTSE (ref 27):</strong> patch-based, supervised, CS recon as "ground truth", <strong>no data-consistency
+  layers</strong>, breath-hold only, phase discarded. The authors position their contribution against exactly these gaps.</li>
+<li><strong>Contribution:</strong> flexible framework, <strong>cascaded unrolled net with DC layers</strong>, trained separately for
+  (a) high-res T2w imaging (supervised) and (b) T2 mapping (self-supervised + SVD temporal subspace).</li>
+</ul>
+<h2 id="2-methods">§2 Methods</h2>
+<ul>
+<li><strong>2.1 RADTSE acq/recon</strong> — Eq 1–6. Radial pseudo-golden-angle; two recon routes: composite (TE-averaged,
+  Eq 2) and per-TE (Eq 3). Density compensation <code>D</code>; the <code>A/A*</code> unified notation and the <code>A*:=AᴴD</code> convention.
+  PC/subspace model via SVD of a SEPG signal dictionary (Eq 4), <code>P = 4</code> PCs (99.96% variance).</li>
+<li><strong>2.2 Network</strong> — Eq 7–9. <code>K = 5</code> cascades alternating <strong>CNN block</strong> (L = 5 conv layers + nonlinearity +
+  residual) and <strong>DC block</strong> (learned-step gradient descent, Eq 9). Composite net: 1 channel. TE/T2 net: multi-
+  channel (P PC channels).</li>
+<li><strong>2.3 Training</strong> — Eq 10–13. Zero-fill a <em>random</em> number of entire echo trains. Composite = supervised image
+  loss (Eq 11). TE/T2 = self-supervised k-space loss (Eq 12–13), SSDU-inspired but loss over the <strong>entire</strong> <code>y</code>.</li>
+<li><strong>2.4 Dataset</strong> — 121 volunteers, 3T Skyra/Vida, 85/9/27 split. ETL 32, 384 views, matrix 320². 6 virtual
+  coils (SVD). Training acceleration 1.5–6× (<code>r ∈ {2..8}</code> of 12 echo trains kept). NAdam, cosine LR, 450/150 epochs.</li>
+<li><strong>2.5 T2-error validation</strong> — T2 error is <strong>not</strong> in the loss; used only for <strong>epoch/model selection</strong> (lowest
+  mean ROI T2 error on val, ROIs in liver/kidney/spleen/muscle). Targets from 384-view LLR (ref 22).</li>
+<li><strong>2.6 T2 quantification</strong> — reference = 8192-view scan (7 subjects, ~25 min, 5 slices), retrospectively
+  undersampled to 192/160/128, compared DL vs LLR against 8192-view NUFFT reference.</li>
+<li><strong>2.7 Anatomical-image error</strong> — composite net (supervised); 384-view test data as reference; ℓ¹/ℓ²/PSNR.</li>
+<li><strong>2.8 Prospective data</strong> — 15 subjects at 384/192/160/128 views; <strong>qualitative only</strong> (no voxel-wise reference).</li>
+<li><strong>2.9 System/code</strong> — PyTorch + MERLIN (complex support); trained on P100 / RTX 3090 / RTX A6000; speed on A6000.
+  Code public (github.com/UA-MRI/radtse-dl-recon).</li>
+</ul>
+<h2 id="3-results">§3 Results</h2>
+<ul>
+<li><strong>3.1 T2 quantification (Fig 3, Table 1)</strong> — DL T2 correlates better with the 8192-view reference than LLR;
+  DL regression lines closer to identity, higher R². <strong>Table 1 headline:</strong> at 192 views DL≈LLR; at 160 and 128
+  views LLR error rises sharply while DL stays stable. Performance <strong>drops 160→128 views</strong> ⟹ <strong>160 = sweet spot</strong>.</li>
+<li><strong>3.2 Anatomical error (Fig 4/5, Table 2)</strong> — DL TE and composite images have lower ℓ¹/ℓ² and higher PSNR than
+  NUFFT and LLR at all accelerations; DL TE at <strong>128 views beats</strong> NUFFT/LLR TE at <strong>192 views</strong>.</li>
+<li><strong>3.3 Prospective (Fig 6/7)</strong> — 384/192/160/128-view scans take 8:19 / 3:33 / 2:57 / 2:37 min; 58–67% less
+  k-space → 64–68% scan-time reduction. 160 views → 28 slices, 28 T2 maps, 896 TE images in <strong>2:57 min</strong>, 1 s/slice.</li>
+<li><strong>3.4 Pathology (Fig 8)</strong> — two patients (cholangiohepatitis, hemangioma, hepatic/splenic cysts, GIST);
+  model qualitatively robust to 160-view undersampling, though trained on (mostly) healthy volunteers.</li>
+</ul>
+<h2 id="4-discussion-honest-limitations-read-these-carefully">§4 Discussion — honest limitations (read these carefully)</h2>
+<ul>
+<li>Radial: susceptible to off-resonance &amp; gradient-delay errors (partly mitigated by fat-sat, sequence design).</li>
+<li><strong>Residual streaks</strong> in high-motion regions (stomach peristalsis, CSF pulsation) — motion doesn't average out
+  at high acceleration. Might improve if trained on 8192-view data (impractical: ~25 min/5 slices).</li>
+<li>Model is <strong>application-specific</strong>: trained for free-breathing abdominal T2; other apps need new protocols + fine-tuning.</li>
+<li>Dataset <strong>predominantly healthy</strong>; pathology cohort tiny — needs larger, more varied validation.</li>
+<li>Small/simple CNN (5 cascades × 5 layers) <strong>limited by GPU memory</strong> — bigger nets may help.</li>
+<li>SAR limits from constant 150° flip; variable-flip could raise efficiency further.</li>
+</ul>
+<h2 id="5-conclusion">§5 Conclusion</h2>
+<p>Efficient free-breathing full-abdomen T2 mapping via a novel <strong>self-supervised</strong> DL recon on RADTSE; anatomical
+T2w images + accurate T2 maps in one accelerated respiratory-triggered acquisition, mean <strong>&lt; 3 min</strong>, without
+sacrificing image quality or T2 accuracy.</p>
+<hr />
+<h2 id="what-the-paper-does-not-teach-your-gaps-see-14_open_questions">What the paper does NOT teach (your gaps → see 14_OPEN_QUESTIONS)</h2>
+<ul>
+<li>No formal CS theory (RIP, incoherence, sample complexity, phase transitions) — it <em>uses</em> subspace sparsity but
+  doesn't derive it.</li>
+<li>No uncertainty quantification / calibration (their <em>other</em> 2026 paper does — that's a natural pairing).</li>
+<li>No proof of convergence for the unrolled scheme; <code>K = 5</code> is empirical.</li>
+<li>Adjoint-NUFFT reference is treated as truth (Audit A7); no fully-independent gold standard for anatomy.</li>
+<li>Ablation lives only in Supporting Information (Audit A12) — not in this PDF.</li>
+<li>Self-supervised loss over the <em>entire</em> <code>y</code> (not a disjoint mask) — leakage question left open (E12 flag).</li>
+</ul>
+<div class="foot">Rendered from <code>01_EXECUTIVE_OVERVIEW.md</code> · Toner et al., <em>Magn Reson Med</em> 2025;94:2475–2491 ·
+DOI 10.1002/mrm.70017</div>
+</div></body></html>

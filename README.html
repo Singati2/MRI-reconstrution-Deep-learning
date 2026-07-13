@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toner 2025 — CS-MRI / Deep-Learning Study Program</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]'],['$$','$$']] },
+                    options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root { --bg:#ffffff; --fg:#1a1a1a; --muted:#57606a; --border:#d0d7de; --code-bg:#f6f8fa;
+        --accent:#0969da; --th:#f6f8fa; --quote:#0969da; --quote-bg:#f6f8fa; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --fg:#e6edf3; --muted:#8b949e;
+        --border:#30363d; --code-bg:#161b22; --accent:#58a6ff; --th:#161b22; --quote:#58a6ff; --quote-bg:#161b22; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+.wrap { max-width:900px; margin:0 auto; padding:32px 20px 96px; }
+.nav { font-size:14px; margin-bottom:24px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+.nav a { color:var(--accent); text-decoration:none; }
+h1,h2,h3,h4 { line-height:1.25; margin-top:1.6em; }
+h1 { font-size:1.9em; border-bottom:1px solid var(--border); padding-bottom:.3em; }
+h2 { font-size:1.45em; border-bottom:1px solid var(--border); padding-bottom:.25em; }
+a { color:var(--accent); }
+code { background:var(--code-bg); padding:.15em .4em; border-radius:5px; font-size:.88em;
+        font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+pre { background:var(--code-bg); padding:14px 16px; border-radius:8px; overflow-x:auto;
+       border:1px solid var(--border); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid var(--quote);
+              background:var(--quote-bg); border-radius:0 6px 6px 0; color:var(--fg); }
+blockquote p { margin:.3em 0; }
+.tablewrap { overflow-x:auto; margin:1em 0; }
+table { border-collapse:collapse; width:100%; font-size:.9em; }
+th,td { border:1px solid var(--border); padding:7px 11px; text-align:left; vertical-align:top; }
+th { background:var(--th); }
+.math { overflow-x:auto; margin:1em 0; padding:6px 0; }
+hr { border:none; border-top:1px solid var(--border); margin:2em 0; }
+img { max-width:100%; }
+.foot { margin-top:64px; padding-top:16px; border-top:1px solid var(--border);
+         color:var(--muted); font-size:13px; }
+</style></head>
+<body><div class="wrap">
+<div class="nav">📚 <a href="index.html">Study index</a> &nbsp;·&nbsp; Toner 2025 — CS-MRI / Deep-Learning study</div>
+<h1 id="toner-2025-cs-mri-deep-learning-study-program">Toner 2025 — CS-MRI / Deep-Learning Study Program</h1>
+<p>Interactive, source-grounded curriculum built around:
+<strong>Toner et al., "Accelerated free-breathing abdominal T2 mapping with deep learning reconstruction of radial
+turbo spin-echo data," <em>Magn Reson Med</em> 2025;94:2475–2491, DOI 10.1002/mrm.70017.</strong>
+Source PDF: <code>~/Desktop/Magnetic Resonance in Med - 2025 - Toner - Accelerated ... deep learning.pdf</code>
+(The originally-named <code>cs_techniques_toner2025.html</code> does not exist — see <code>00_SOURCE_AUDIT.md</code>.)</p>
+<h2 id="build-status-turn-1">Build status (turn 1)</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>File</th>
+<th>Status</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>00_SOURCE_AUDIT.md</code></td>
+<td>✅ <strong>complete</strong></td>
+<td>Manifest + 13-item audit. Key finding: the <code>A*:=AᴴD</code> non-adjoint convention.</td>
+</tr>
+<tr>
+<td><code>01_EXECUTIVE_OVERVIEW.md</code></td>
+<td>✅ <strong>complete</strong></td>
+<td>Section-by-section + honest gaps.</td>
+</tr>
+<tr>
+<td><code>02_EQUATION_REGISTER.md</code></td>
+<td>✅ <strong>complete</strong></td>
+<td>All 13 equations verified + importance ranking.</td>
+</tr>
+<tr>
+<td><code>05_COMPRESSED_SENSING_THEORY.md</code></td>
+<td>✅ <strong>complete</strong></td>
+<td>CS fundamentals + reading path from the intro's CS refs.</td>
+</tr>
+<tr>
+<td><code>13_REFERENCE_MAP.md</code></td>
+<td>✅ <strong>complete</strong></td>
+<td>48 refs mapped; CS reading path highlighted.</td>
+</tr>
+<tr>
+<td><code>code/mri_operators.py</code></td>
+<td>✅ <strong>runs</strong></td>
+<td>Stages 1–3 (FFT, masks, forward/adjoint). Adjoint test = 5.8e-16.</td>
+</tr>
+<tr>
+<td><code>tests/test_operators.py</code></td>
+<td>✅ <strong>runs</strong></td>
+<td>Unit tests for §15 items 1–4, 7, 8.</td>
+</tr>
+<tr>
+<td><code>11_RESEARCH_ROADMAP.md</code></td>
+<td>✅ <strong>complete</strong></td>
+<td>Source-grounded PhD directions (A/B/C tiers).</td>
+</tr>
+<tr>
+<td><code>03,04,06,07</code> (concepts, forward model, optimization, CS→DL)</td>
+<td>🟡 <strong>scaffolded</strong></td>
+<td>Core content is in 01/02/05; these expand it. Build next sessions.</td>
+</tr>
+<tr>
+<td><code>08_DAILY_12_WEEK_PLAN.md</code></td>
+<td>🟡 <strong>outline in this README §Plan</strong></td>
+<td>Full daily plan to be expanded interactively.</td>
+</tr>
+<tr>
+<td><code>09_INTERACTIVE_QUIZZES.md</code>, <code>15_PROGRESS_TRACKER.md</code></td>
+<td>🟡 <strong>live in chat</strong></td>
+<td>Lesson 1 started in-session; tracker seeded below.</td>
+</tr>
+<tr>
+<td><code>10_CODING_LABS.md</code>, <code>12_GLOSSARY.md</code>, <code>14_OPEN_QUESTIONS.md</code></td>
+<td>🟡 <strong>partially in 02/05/13</strong></td>
+<td>Consolidate next.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Why not all 15 files at once:</strong> this prompt is a semester-length course. Turn 1 delivers the parts that
+<em>required actually reading this paper</em> (audit, equation register, overview, CS reference path, runnable
+operators). The teaching files are built <strong>interactively</strong>, lesson by lesson, so they adapt to your mastery
+scores (§12).</p>
+<h2 id="read-order">Read order</h2>
+<ol>
+<li><code>00_SOURCE_AUDIT.md</code> — what's in the paper, what to distrust.</li>
+<li><code>01_EXECUTIVE_OVERVIEW.md</code> — the whole paper in one pass.</li>
+<li><code>05_COMPRESSED_SENSING_THEORY.md</code> + <code>13_REFERENCE_MAP.md</code> — <strong>your CS fundamentals reading path.</strong></li>
+<li><code>02_EQUATION_REGISTER.md</code> — the math, verified.</li>
+<li><code>code/</code> — run <code>python3 code/mri_operators.py</code> then <code>python3 -m pytest tests/</code>.</li>
+<li><code>11_RESEARCH_ROADMAP.md</code> — where this goes for your dissertation.</li>
+</ol>
+<h2 id="environment">Environment</h2>
+<ul>
+<li>Python 3, NumPy (Stages 1–3, CPU). Later labs: PyTorch + a NUFFT lib (torchkbnufft / SigPy) on your RTX 2080 Ti.</li>
+<li><code>requirements.txt</code> provided (minimal).</li>
+</ul>
+<h2 id="hardware-target">Hardware target</h2>
+<p>RTX 2080 Ti, 11 GB. All planned labs fit: single-slice, single-coil first; small <code>K=5</code>×<code>L=5</code> net later,
+batch 1, mixed precision if needed — matching the paper's own memory-limited design.</p>
+<div class="foot">Rendered from <code>README.md</code> · Toner et al., <em>Magn Reson Med</em> 2025;94:2475–2491 ·
+DOI 10.1002/mrm.70017</div>
+</div></body></html>

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>13 — Reference Map (with a Compressed-Sensing reading path)</title>
+<script>
+window.MathJax = { tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]'],['$$','$$']] },
+                    options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] } };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root { --bg:#ffffff; --fg:#1a1a1a; --muted:#57606a; --border:#d0d7de; --code-bg:#f6f8fa;
+        --accent:#0969da; --th:#f6f8fa; --quote:#0969da; --quote-bg:#f6f8fa; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --fg:#e6edf3; --muted:#8b949e;
+        --border:#30363d; --code-bg:#161b22; --accent:#58a6ff; --th:#161b22; --quote:#58a6ff; --quote-bg:#161b22; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+       font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+.wrap { max-width:900px; margin:0 auto; padding:32px 20px 96px; }
+.nav { font-size:14px; margin-bottom:24px; padding-bottom:12px; border-bottom:1px solid var(--border); }
+.nav a { color:var(--accent); text-decoration:none; }
+h1,h2,h3,h4 { line-height:1.25; margin-top:1.6em; }
+h1 { font-size:1.9em; border-bottom:1px solid var(--border); padding-bottom:.3em; }
+h2 { font-size:1.45em; border-bottom:1px solid var(--border); padding-bottom:.25em; }
+a { color:var(--accent); }
+code { background:var(--code-bg); padding:.15em .4em; border-radius:5px; font-size:.88em;
+        font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+pre { background:var(--code-bg); padding:14px 16px; border-radius:8px; overflow-x:auto;
+       border:1px solid var(--border); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid var(--quote);
+              background:var(--quote-bg); border-radius:0 6px 6px 0; color:var(--fg); }
+blockquote p { margin:.3em 0; }
+.tablewrap { overflow-x:auto; margin:1em 0; }
+table { border-collapse:collapse; width:100%; font-size:.9em; }
+th,td { border:1px solid var(--border); padding:7px 11px; text-align:left; vertical-align:top; }
+th { background:var(--th); }
+.math { overflow-x:auto; margin:1em 0; padding:6px 0; }
+hr { border:none; border-top:1px solid var(--border); margin:2em 0; }
+img { max-width:100%; }
+.foot { margin-top:64px; padding-top:16px; border-top:1px solid var(--border);
+         color:var(--muted); font-size:13px; }
+</style></head>
+<body><div class="wrap">
+<div class="nav">📚 <a href="index.html">Study index</a> &nbsp;·&nbsp; Toner 2025 — CS-MRI / Deep-Learning study</div>
+<h1 id="13-reference-map-with-a-compressed-sensing-reading-path">13 — Reference Map (with a Compressed-Sensing reading path)</h1>
+<p>This maps the paper's 48 references to <em>what you should read and why</em>, and — per your request — pulls out the
+<strong>compressed-sensing references the Introduction actually leans on</strong>, then honestly flags the canonical CS
+foundations the paper <em>assumes but never cites</em>.</p>
+<blockquote>
+<p><strong>Accuracy labels (your own rules §2.2):</strong> <strong>Source-cited</strong> = literally in Toner 2025's reference list;
+<strong>Background</strong> = standard CS foundation I'm recalling from knowledge (not in this paper — verify before quoting);
+<strong>Needs verification</strong> = read it yourself before relying on details.</p>
+</blockquote>
+<hr />
+<h2 id="a-the-cs-references-the-introduction-points-you-to-source-cited">A. The CS references the Introduction points you to  (Source-cited)</h2>
+<p>The intro's key CS sentence (p.2476): <em>"Compressed sensing (CS) techniques that rely on temporal correlations
+between neighboring TEs have been shown to be effective in reconstructing undersampled RADTSE data without the
+limitations of echo-sharing¹⁸,¹⁹,²²⁻²⁴."</em> These are the author's own "read this for the CS background" pointers —
+note they are the <strong>Arizona group's applied subspace/temporal-CS lineage</strong>, not the abstract CS theory papers.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Ref</th>
+<th>Citation (as in paper)</th>
+<th>What it gives you</th>
+<th>Read for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>22</strong> ⭐</td>
+<td>Huang, Graff, Clarkson, Bilgin, Altbach. <em>T2 mapping from highly undersampled data by reconstruction of principal-component coefficient maps using compressed sensing.</em> MRM 2012;67:1355–1366.</td>
+<td><strong>The foundational CS-for-RADTSE paper.</strong> Introduces the <strong>PC/subspace coefficient-map CS</strong> that Eq (4) in Toner 2025 reuses (SVD of a signal-decay dictionary → few PCs → sparse temporal representation → CS recon). Also the <strong>LLR baseline</strong> family.</td>
+<td><strong>START HERE.</strong> This is the single most load-bearing CS reference for understanding <em>why</em> the DL net works in a 4-PC subspace.</td>
+</tr>
+<tr>
+<td><strong>23</strong></td>
+<td>Mandava, Keerthivasan, Martin, Altbach, Bilgin. <em>Improving subspace-constrained radial fast spin echo MRI using block matching and non-local low-rank regularization.</em> Phys Med Biol 2021;66:04NT03.</td>
+<td><strong>Subspace + low-rank</strong> regularization — the direct predecessor of the LLR baseline (ref 22's descendant) that DL is compared against. Shows the classical prior the network implicitly replaces.</td>
+<td>Understand the LLR baseline and low-rank temporal priors.</td>
+</tr>
+<tr>
+<td><strong>21</strong></td>
+<td>Altbach, Bilgin, Li, Clarkson, Trouard, Gmitro. <em>Processing of radial fast spin-echo data for obtaining T2 estimates from a single k-space data set.</em> MRM 2005;54:549–559.</td>
+<td><strong>Echo-sharing</strong> — the pre-CS method CS <em>improves upon</em>. Explains why sharing k-space across TEs causes spurious T2.</td>
+<td>The "before CS" baseline; motivates everything.</td>
+</tr>
+<tr>
+<td><strong>18</strong></td>
+<td>Huang, Bilgin, Barr, Altbach. <em>T2 relaxometry with indirect echo compensation from highly undersampled data.</em> MRM 2013;70:1026–1037.</td>
+<td>Dictionary-matching T2 fit <strong>with stimulated/indirect-echo compensation</strong> from undersampled data.</td>
+<td>The T2-fitting side (dictionary matching) that consumes the CS-reconstructed TE images.</td>
+</tr>
+<tr>
+<td><strong>19</strong></td>
+<td>Huang, Altbach, Fakhri. <em>Pattern recognition for rapid T2 mapping with stimulated echo compensation.</em> MRI 2014;32:969–974.</td>
+<td>Pattern-recognition / dictionary approach to rapid T2 mapping.</td>
+<td>Same fitting lineage as ref 18.</td>
+</tr>
+<tr>
+<td><strong>24</strong></td>
+<td>Lebel, Wilman. <em>Transverse relaxometry with stimulated-echo compensation.</em> MRM 2010;64:1005–1014.</td>
+<td>The <strong>SEPG</strong> (slice-resolved extended phase graph) <strong>signal model</strong> used to build the dictionary whose SVD gives the PCs (Eq 4).</td>
+<td><em>Why</em> the temporal subspace is low-dimensional in the first place — the physics of the decay curves.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>How they connect (the CS story of this paper):</strong></p>
+<pre><code>echo-sharing (21)   →  spurious T2, so...
+SEPG signal model (24)  gives realistic decay curves  →  build a dictionary
+   →  SVD the dictionary → few PCs (temporal sparsity)  →  subspace/PC-coefficient CS (22, 23)
+   →  Toner 2025 puts that same subspace INSIDE an unrolled DL net (Eq 4, 12, 13)
+dictionary matching (18, 19)  fits the final TE images voxel-wise → T2 map
+</code></pre>
+<h2 id="b-physics-driven-unrolled-dl-references-source-cited-the-csdl-bridge">B. Physics-driven / unrolled DL references (Source-cited) — the CS→DL bridge</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Ref</th>
+<th>What it gives you</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>25</strong></td>
+<td>Hammernik, Küstner, Yaman, et al. <em>Physics-driven DL for computational MRI</em> (review). <strong>The best single survey</strong> of combining physics + ML for MRI recon.</td>
+</tr>
+<tr>
+<td><strong>28</strong></td>
+<td>Schlemper, Caballero, Hajnal, Price, Rueckert. <em>Deep cascade of CNNs for MR recon</em> — the cascaded-network architecture Toner builds on.</td>
+</tr>
+<tr>
+<td><strong>29</strong></td>
+<td>Schlemper et al. <em>Nonuniform variational network</em> — radial/NUFFT unrolled net.</td>
+</tr>
+<tr>
+<td><strong>30</strong></td>
+<td>Hammernik et al. <em>Learning a Variational Network</em> — VarNet, the canonical unrolled recon.</td>
+</tr>
+<tr>
+<td><strong>43</strong></td>
+<td>Yaman et al. <em>Self-supervised learning of physics-guided recon without fully sampled reference</em> — <strong>SSDU</strong>, the basis for the self-supervised loss (Eq 12–13).</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="c-canonical-cs-foundations-the-paper-assumes-but-does-not-cite-background-verify-before-quoting">C. Canonical CS FOUNDATIONS the paper ASSUMES but does NOT cite  (Background — verify before quoting)</h2>
+<blockquote>
+<p>⚠️ Important honesty flag: Toner 2025 is an <em>applied</em> paper. It never cites the theory that "compressed
+sensing" rests on. If you want the <strong>fundamental concepts</strong> (sparsity, incoherence, RIP, sample complexity,
+ℓ¹ recovery, phase transitions), you must go <strong>outside</strong> this reference list. These are the standard sources
+(I'm recalling them from background knowledge — confirm details yourself):</p>
+</blockquote>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Standard source (Background — not in Toner 2025)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CS-MRI birth</td>
+<td>Lustig, Donoho, Pauly. <em>Sparse MRI: the application of CS for rapid MR imaging.</em> MRM 2007;58:1182–1195. <strong>The</strong> CS-MRI paper — read this for fundamentals.</td>
+</tr>
+<tr>
+<td>CS theory</td>
+<td>Candès, Romberg, Tao (2006) — robust uncertainty principles / stable recovery; Donoho (2006) — <em>Compressed Sensing</em>, IEEE T-IT.</td>
+</tr>
+<tr>
+<td>RIP &amp; recovery</td>
+<td>Candès, Tao — restricted isometry property, ℓ¹ recovery guarantees.</td>
+</tr>
+<tr>
+<td>Radial + TV CS-MRI</td>
+<td>Block, Uecker, Frahm (2007) — <em>Undersampled radial MRI with TV constraint</em>, MRM. (Closest classical analog to RADTSE CS.)</td>
+</tr>
+<tr>
+<td>Phase transitions</td>
+<td>Donoho–Tanner — ℓ¹/ℓ⁰ phase-transition diagrams (relevant to your open question #9 on failure boundaries).</td>
+</tr>
+<tr>
+<td>Optimization</td>
+<td>Beck–Teboulle 2009 (FISTA); Boyd et al. 2011 (ADMM); Parikh–Boyd (proximal algorithms).</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Takeaway:</strong> for the <em>fundamentals of CS</em>, read <strong>Lustig 2007 (Sparse MRI)</strong> first, then the theory pair
+(Candès–Romberg–Tao / Donoho). For <em>this paper's flavor of CS</em> (temporal-subspace CS on RADTSE), read the
+author's own lineage — <strong>ref 22 (Huang 2012) is the keystone</strong>, supported by 23, 21, 24, 18, 19. The
+recommended order is in <code>05_COMPRESSED_SENSING_THEORY.md</code>.</p>
+<div class="foot">Rendered from <code>13_REFERENCE_MAP.md</code> · Toner et al., <em>Magn Reson Med</em> 2025;94:2475–2491 ·
+DOI 10.1002/mrm.70017</div>
+</div></body></html>
