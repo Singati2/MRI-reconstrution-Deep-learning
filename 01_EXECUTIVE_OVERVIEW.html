@@ -71,7 +71,7 @@ reconstruction, lower T2 error and more stable behavior under acceleration than 
 <h2 id="2-methods">§2 Methods</h2>
 <ul>
 <li><strong>2.1 RADTSE acq/recon</strong> — Eq 1–6. Radial pseudo-golden-angle; two recon routes: composite (TE-averaged,
-  Eq 2) and per-TE (Eq 3). Density compensation <code>D</code>; the <code>A/A*</code> unified notation and the <code>A*:=AᴴD</code> convention.
+  Eq 2) and per-TE (Eq 3). Density compensation <code>D</code>; the <code>A/A*</code> unified notation and the \(A*:=A^{HD}\) convention.
   PC/subspace model via SVD of a SEPG signal dictionary (Eq 4), <code>P = 4</code> PCs (99.96% variance).</li>
 <li><strong>2.2 Network</strong> — Eq 7–9. <code>K = 5</code> cascades alternating <strong>CNN block</strong> (L = 5 conv layers + nonlinearity +
   residual) and <strong>DC block</strong> (learned-step gradient descent, Eq 9). Composite net: 1 channel. TE/T2 net: multi-
@@ -79,7 +79,7 @@ reconstruction, lower T2 error and more stable behavior under acceleration than 
 <li><strong>2.3 Training</strong> — Eq 10–13. Zero-fill a <em>random</em> number of entire echo trains. Composite = supervised image
   loss (Eq 11). TE/T2 = self-supervised k-space loss (Eq 12–13), SSDU-inspired but loss over the <strong>entire</strong> <code>y</code>.</li>
 <li><strong>2.4 Dataset</strong> — 121 volunteers, 3T Skyra/Vida, 85/9/27 split. ETL 32, 384 views, matrix 320². 6 virtual
-  coils (SVD). Training acceleration 1.5–6× (<code>r ∈ {2..8}</code> of 12 echo trains kept). NAdam, cosine LR, 450/150 epochs.</li>
+  coils (SVD). Training acceleration 1.5–6× (\(r \in  {2..8}\) of 12 echo trains kept). NAdam, cosine LR, 450/150 epochs.</li>
 <li><strong>2.5 T2-error validation</strong> — T2 error is <strong>not</strong> in the loss; used only for <strong>epoch/model selection</strong> (lowest
   mean ROI T2 error on val, ROIs in liver/kidney/spleen/muscle). Targets from 384-view LLR (ref 22).</li>
 <li><strong>2.6 T2 quantification</strong> — reference = 8192-view scan (7 subjects, ~25 min, 5 slices), retrospectively

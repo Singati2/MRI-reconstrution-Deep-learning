@@ -130,7 +130,7 @@ directly from the 17-page PDF.</p>
 <li><strong>Protocol:</strong> 28 axial slices, 6 mm, 0.78 mm (13%) gap → 189.06 mm coverage. ETL = 32. Echo spacing 8.1 ms (Skyra) / 8.46 ms (Vida). Flip 150°. TR = 1 respiratory cycle. FoV 380×380 mm². <strong>384 radial views</strong>, 512 readout points, 2× readout oversampling; reconstructed at matrix 320×320. Fat sat via CHESS.</li>
 <li><strong>Coils:</strong> compressed to <strong>6 virtual coils</strong> via SVD.</li>
 <li><strong>Subspace:</strong> <strong>P &lt; ETL</strong> principal components; <strong>P = 4</strong> PCs used (first 4 PCs = 99.96% explained variance).</li>
-<li><strong>Training undersampling:</strong> random <code>r ∈ {2,…,8}</code> echo trains kept out of 12 → acceleration <strong>1.5–6×</strong>.</li>
+<li><strong>Training undersampling:</strong> random \(r \in  {2,\dots ,8}\) echo trains kept out of 12 → acceleration <strong>1.5–6×</strong>.</li>
 <li><strong>Network:</strong> <strong>K = 5</strong> cascades, <strong>L = 5</strong> conv layers/CNN block, kernel 3×3, 64 hidden channels, ReLU modified for complex weights, NAdam, cosine-annealed LR (init 1e−4). Composite net 450 epochs; TE/T2 net 150 epochs. Batch 1–4.</li>
 <li><strong>Reconstruction time:</strong> ≈ <strong>1 s/slice</strong> (DL) vs &gt; 30 min/slice (LLR).</li>
 <li><strong>Headline:</strong> full-liver free-breathing coverage from <strong>160 total views (5 views/TE)</strong> in <strong>&lt; 3 min</strong> (mean 2:57).</li>
@@ -159,10 +159,10 @@ No file was altered during this audit (§4 requirement).</p>
 <tr>
 <td>A1</td>
 <td>NUFFT symbol switches from 𝒯 to ℱ</td>
-<td>Eq (1)–(3) use <code>𝒯ᵢ</code>/<code>𝒯*_comp</code>; Eq (4)–(6) use <code>ℱ</code>/<code>ℱ*</code></td>
+<td>Eq (1)–(3) use \(\mathcal{T}_i\)/\(\mathcal{T}*_{comp}\); Eq (4)–(6) use \(\mathcal{F}\)/\(\mathcal{F}*\)</td>
 <td><strong>Notation inconsistency</strong></td>
-<td>The nonuniform FFT operator is written <code>𝒯</code> in the sampling equations but <code>ℱ</code> once the PC model is introduced. Same operator, two glyphs.</td>
-<td>Standardize to one symbol (e.g. <code>F</code> for the (nonuniform) Fourier encoding) throughout, or explicitly state <code>ℱ ≡ 𝒯</code>.</td>
+<td>The nonuniform FFT operator is written \(\mathcal{T}\) in the sampling equations but \(\mathcal{F}\) once the PC model is introduced. Same operator, two glyphs.</td>
+<td>Standardize to one symbol (e.g. <code>F</code> for the (nonuniform) Fourier encoding) throughout, or explicitly state \(\mathcal{F} \equiv  \mathcal{T}\).</td>
 <td>High</td>
 </tr>
 <tr>
@@ -171,22 +171,22 @@ No file was altered during this audit (§4 requirement).</p>
 <td>p.2477–2478, after Eq (6): "we will assume <code>A* := A*D</code> … <code>A</code> and <code>A*</code> are no longer true adjoints under this convention"</td>
 <td><strong>Ambiguity (author-acknowledged)</strong></td>
 <td>The density-compensation <code>D</code> is folded into the "adjoint" so <code>A*</code> is a <em>preconditioned</em> back-projection, not the mathematical adjoint. A reader running an inner-product adjoint test on the paper's <code>A</code>,<code>A*</code> will see it <strong>fail by design</strong>.</td>
-<td>Not an error — but for your own code, keep a <em>true</em> adjoint <code>Aᴴ</code> (passes the dot-product test) separate from the paper's preconditioned <code>A*=AᴴD</code>. See Equation Register E5/E6.</td>
+<td>Not an error — but for your own code, keep a <em>true</em> adjoint \(A^H\) (passes the dot-product test) separate from the paper's preconditioned \(A*=A^{HD}\). See Equation Register E5/E6.</td>
 <td>High</td>
 </tr>
 <tr>
 <td>A3</td>
 <td><code>F</code>/<code>F*</code> orientation vs. Eq (4)</td>
-<td><code>A := ℱ*SU*</code> (PC case, p.2477) vs. Eq (4) <code>Ux = US*ℱ*Dy</code></td>
+<td>\(A := \mathcal{F}*SU*\) (PC case, p.2477) vs. Eq (4) \(Ux = US*\mathcal{F}*Dy\)</td>
 <td><strong>Ambiguity</strong></td>
-<td>Which of <code>ℱ</code>,<code>ℱ*</code> is the image→k-space direction is easy to lose track of because <code>A</code> (the <em>forward</em> op, image→k-space) is defined with a starred <code>ℱ*</code>. Consistent only once you accept the A2 convention (D absorbed, adjoints relabeled).</td>
+<td>Which of \(\mathcal{F}\),\(\mathcal{F}*\) is the image→k-space direction is easy to lose track of because <code>A</code> (the <em>forward</em> op, image→k-space) is defined with a starred \(\mathcal{F}*\). Consistent only once you accept the A2 convention (D absorbed, adjoints relabeled).</td>
 <td>State the direction of every operator once in a table (image→kspace vs kspace→image). Handled in E-register.</td>
 <td>Medium</td>
 </tr>
 <tr>
 <td>A4</td>
-<td><code>D</code> vs <code>D̄</code></td>
-<td>Eq (2) uses full \(D ∈ ℝ^{(M·ETL)×(M·ETL)}\); Eq (3) uses \(D̄ ∈ ℝ^{M×M}\)</td>
+<td><code>D</code> vs \(\bar{D}\)</td>
+<td>Eq (2) uses full \(D \in  \mathbb{R}^{(M\cdot ETL)\times (M\cdot ETL)}\); Eq (3) uses \(\bar{D} \in  \mathbb{R}^{M\times M}\)</td>
 <td><strong>No issue (well-defined)</strong></td>
 <td>Two ramp density-compensation operators of different sizes (all-TE vs single-TE). Correctly distinguished in text.</td>
 <td>None — just note the bar means "single-TE slice of D."</td>
@@ -194,8 +194,8 @@ No file was altered during this audit (§4 requirement).</p>
 </tr>
 <tr>
 <td>A5</td>
-<td><code>x̄ᵢ</code> (ground truth) vs <code>x'</code> (network image) vs <code>x̂</code> (estimate)</td>
-<td>Eq (1) <code>x̄ᵢ</code>; Eq (5)–(9) <code>x'</code>; Eq (10)/(11) <code>x̂</code></td>
+<td>\(\bar{x}_i\) (ground truth) vs <code>x'</code> (network image) vs \(\hat{x}\) (estimate)</td>
+<td>Eq (1) \(\bar{x}_i\); Eq (5)–(9) <code>x'</code>; Eq (10)/(11) \(\hat{x}\)</td>
 <td><strong>Pedagogical weakness</strong></td>
 <td>Three decorations of <code>x</code> (bar, prime, hat) carry distinct meanings (ground truth / current-iterate PC-or-composite image / final estimate) but the distinction is never tabulated. Easy to conflate.</td>
 <td>Keep a symbol table (provided in Glossary). Not an error.</td>
@@ -203,11 +203,11 @@ No file was altered during this audit (§4 requirement).</p>
 </tr>
 <tr>
 <td>A6</td>
-<td>Subspace dimension symbol <code>P</code> vs <code>τ</code></td>
-<td><code>P</code> = #PCs (2.2, 2.4); DC block text uses <code>τ</code> ("τ = 1 for composite, τ = P for PC")</td>
+<td>Subspace dimension symbol <code>P</code> vs \(\tau \)</td>
+<td><code>P</code> = #PCs (2.2, 2.4); DC block text uses \(\tau \) ("τ = 1 for composite, τ = P for PC")</td>
 <td><strong>Notation inconsistency (minor)</strong></td>
-<td><code>τ</code> is introduced only in the Fig 2 caption / Eq (7)–(9) region as the channel count; it equals 1 or <code>P</code>. Reader may not connect <code>τ</code> to <code>P</code>.</td>
-<td>State <code>τ ∈ {1, P}</code> explicitly at first use.</td>
+<td>\(\tau \) is introduced only in the Fig 2 caption / Eq (7)–(9) region as the channel count; it equals 1 or <code>P</code>. Reader may not connect \(\tau \) to <code>P</code>.</td>
+<td>State \(\tau  \in  {1, P}\) explicitly at first use.</td>
 <td>Medium</td>
 </tr>
 <tr>
@@ -222,15 +222,15 @@ No file was altered during this audit (§4 requirement).</p>
 <tr>
 <td>A8</td>
 <td>Eq (8) chain-rule result</td>
-<td><code>d/dx̂'⁽ʲ⁾ [½‖Ax̂'⁽ʲ⁾−y‖²] = A*(Ax̂'⁽ʲ⁾−y)</code></td>
+<td>\(d/d\hat{x}'^{(j)} [\tfrac12 \|A\hat{x}'^{(j)}-y\|^2] = A*(A\hat{x}'^{(j)}-y)\)</td>
 <td><strong>Correct under A2 convention</strong></td>
-<td>With a <em>true</em> adjoint the gradient is <code>Aᴴ(Ax−y)</code>; the paper writes <code>A*</code> which under their convention is <code>AᴴD</code>. So the "gradient" is a <em>preconditioned</em> gradient, not the exact one.</td>
-<td>Fine for a learned step-size <code>η</code> (backprop absorbs the preconditioner), but flag it: Eq (9) is preconditioned gradient descent, not vanilla GD.</td>
+<td>With a <em>true</em> adjoint the gradient is \(A^H(Ax-y)\); the paper writes <code>A*</code> which under their convention is \(A^{HD}\). So the "gradient" is a <em>preconditioned</em> gradient, not the exact one.</td>
+<td>Fine for a learned step-size \(\eta \) (backprop absorbs the preconditioner), but flag it: Eq (9) is preconditioned gradient descent, not vanilla GD.</td>
 <td>Medium</td>
 </tr>
 <tr>
 <td>A9</td>
-<td><code>α</code> set to ½</td>
+<td>\(\alpha \) set to ½</td>
 <td>Eq (11), Eq (13): "α ∈ [0,1] … (set to ½)"</td>
 <td><strong>No issue</strong></td>
 <td>Balances ℓ¹ and ℓ² terms equally. Clearly stated.</td>
@@ -240,7 +240,7 @@ No file was altered during this audit (§4 requirement).</p>
 <tr>
 <td>A10</td>
 <td>Loss normalization</td>
-<td>Eq (11)/(13) divide by <code>‖x‖₁</code>,<code>‖x‖₂</code> / <code>‖y‖₁</code>,<code>‖y‖₂</code></td>
+<td>Eq (11)/(13) divide by \(\|x\|_1\),\(\|x\|_2\) / \(\|y\|_1\),\(\|y\|_2\)</td>
 <td><strong>No issue (worth noting)</strong></td>
 <td>Relative (scale-invariant) loss. Good practice, but means the loss magnitude is not comparable across normalization schemes.</td>
 <td>Note the [0,1] magnitude normalization step (2.4) that precedes it.</td>
@@ -280,11 +280,11 @@ No file was altered during this audit (§4 requirement).</p>
 <li><strong>Confirmed errors:</strong> none.</li>
 <li><strong>Probable errors:</strong> none.</li>
 <li><strong>Notation inconsistencies:</strong> A1 (𝒯↔ℱ), A6 (P↔τ) — cosmetic, do not change results.</li>
-<li><strong>Ambiguities (author-acknowledged):</strong> A2, A3, A8 — the <code>A*:=AᴴD</code> convention. Important to understand, not a mistake.</li>
+<li><strong>Ambiguities (author-acknowledged):</strong> A2, A3, A8 — the \(A*:=A^{HD}\) convention. Important to understand, not a mistake.</li>
 <li><strong>Pedagogical weaknesses:</strong> A5, A7 — symbol decorations &amp; non-ideal reference.</li>
 <li><strong>Inaccessible:</strong> A12 (Supporting Information ablation).</li>
 </ul>
-<p><strong>Bottom line:</strong> the paper is mathematically clean. The single most important thing to internalize is the <strong>A2 convention</strong> — the paper's <code>A*</code> is a <em>density-compensated back-projection</em>, not a true adjoint. This is standard in the physics-driven-DL literature but trips up first readers, and it is why an adjoint dot-product test on the paper's operators "fails" (it is supposed to). Your own code should keep the mathematically-true <code>Aᴴ</code> for testing separate from the preconditioned <code>A*</code> used in the DC step.</p>
+<p><strong>Bottom line:</strong> the paper is mathematically clean. The single most important thing to internalize is the <strong>A2 convention</strong> — the paper's <code>A*</code> is a <em>density-compensated back-projection</em>, not a true adjoint. This is standard in the physics-driven-DL literature but trips up first readers, and it is why an adjoint dot-product test on the paper's operators "fails" (it is supposed to). Your own code should keep the mathematically-true \(A^H\) for testing separate from the preconditioned <code>A*</code> used in the DC step.</p>
 <div class="foot">Rendered from <code>00_SOURCE_AUDIT.md</code> · Toner et al., <em>Magn Reson Med</em> 2025;94:2475–2491 ·
 DOI 10.1002/mrm.70017</div>
 </div></body></html>

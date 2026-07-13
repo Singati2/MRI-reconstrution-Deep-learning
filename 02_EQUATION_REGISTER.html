@@ -44,8 +44,8 @@ img { max-width:100%; }
 <div class="nav">📚 <a href="index.html">Study index</a> &nbsp;·&nbsp; Toner 2025 — CS-MRI / Deep-Learning study</div>
 <h1 id="02-equation-register-toner-2025-eq-113">02 — Equation Register (Toner 2025, Eq 1–13)</h1>
 <p>Every numbered equation, reproduced from the source, standardized, verified, and connected to MRI /
-optimization / deep learning. <strong>Convention flag (see Audit A2):</strong> the paper defines <code>A* := Aᴴ D</code> (density
-compensation <code>D</code> folded in), so the paper's <code>A*</code> is <strong>not</strong> the true adjoint <code>Aᴴ</code>. I mark where this matters.</p>
+optimization / deep learning. <strong>Convention flag (see Audit A2):</strong> the paper defines \(A* := A^H D\) (density
+compensation <code>D</code> folded in), so the paper's <code>A*</code> is <strong>not</strong> the true adjoint \(A^H\). I mark where this matters.</p>
 <p><strong>Symbol key</strong></p>
 <pre><code class="language-text">x, x̄, x', x̂   image (generic / ground-truth / current network iterate / final estimate)   ∈ ℂ^{N·τ}
 y, yᵢ          measured radial k-space (all-TE / single echo time TEᵢ)                      ∈ ℂ^{M·ETL}, ℂ^{M}
@@ -60,101 +60,101 @@ N              #image pixels;  M            #radial k-space samples per echo;  C
 </code></pre>
 <hr />
 <h2 id="e1-radial-sampling-forward-model-single-echo-time">E1 — Radial sampling / forward model (single echo time)</h2>
-<p><strong>Source form</strong>  <code>yᵢ = 𝒯ᵢ S x̄ᵢ + εᵢ</code>  (Eq 1)</p>
+<p><strong>Source form</strong>  \(y_i = \mathcal{T}_i S \bar{x}_i + \epsilon _i\)  (Eq 1)</p>
 <p><strong>Standardized</strong>  \(y_i = \mathcal{T}_i\, S\, \bar{x}_i + \epsilon_i,\quad i=1,\dots,\text{ETL}\)</p>
-<p><strong>Meaning</strong> — the measured radial k-space at echo time <code>TEᵢ</code> is: take the true TE image <code>x̄ᵢ</code>, apply coil
-sensitivities <code>S</code>, sample its Fourier transform on the radial trajectory of that TE (<code>𝒯ᵢ</code>), add noise <code>εᵢ</code>.</p>
-<p><strong>Dimensions</strong> — \(x̄ᵢ ∈ ℂ^{N}\), \(S : ℂ^{N} → ℂ^{N·C}\), \(𝒯ᵢ : ℂ^{N·C} → ℂ^{M·C}\), \(yᵢ ∈ ℂ^{M·C}\), \(εᵢ ∈ ℂ^{M·C}\).
-(The paper writes \(yᵢ ∈ ℂ^{M×1}\) per coil; multi-coil stacks over <code>C</code>.)</p>
+<p><strong>Meaning</strong> — the measured radial k-space at echo time \(TE_i\) is: take the true TE image \(\bar{x}_i\), apply coil
+sensitivities <code>S</code>, sample its Fourier transform on the radial trajectory of that TE (\(\mathcal{T}_i\)), add noise \(\epsilon _i\).</p>
+<p><strong>Dimensions</strong> — \(\bar{x}_i \in  \mathbb{C}^{N}\), \(S : \mathbb{C}^{N} \to  \mathbb{C}^{N\cdot C}\), \(\mathcal{T}_i : \mathbb{C}^{N\cdot C} \to  \mathbb{C}^{M\cdot C}\), \(y_i \in  \mathbb{C}^{M\cdot C}\), \(\epsilon _i \in  \mathbb{C}^{M\cdot C}\).
+(The paper writes \(y_i \in  \mathbb{C}^{M\times 1}\) per coil; multi-coil stacks over <code>C</code>.)</p>
 <p><strong>Assumptions</strong> — linear MR signal model; known <code>S</code>; Gaussian(-ish) complex noise; each TE has its own
-well-distributed radial angles (pseudo-golden-angle) so <code>𝒯ᵢ</code> differs per <code>i</code>.</p>
+well-distributed radial angles (pseudo-golden-angle) so \(\mathcal{T}_i\) differs per <code>i</code>.</p>
 <p><strong>MRI interpretation</strong> — this <em>is</em> the physics: spin density → coil weighting → k-space encoding → sampling.
 Radial + golden-angle is what makes RADTSE motion-robust and per-TE incoherent.</p>
 <p><strong>Optimization interpretation</strong> — defines the data-fidelity operator; reconstruction inverts this map.</p>
 <p><strong>DL connection</strong> — this exact operator (and its adjoint) is baked into the <strong>data-consistency (DC) layer</strong>;
-the network never has to <em>learn</em> the physics — it is handed <code>𝒯ᵢ</code>, <code>S</code>.</p>
+the network never has to <em>learn</em> the physics — it is handed \(\mathcal{T}_i\), <code>S</code>.</p>
 <p><strong>Verification status</strong> — ✅ correct as written.</p>
 <hr />
 <h2 id="e2-composite-te-averaged-reconstruction">E2 — Composite (TE-averaged) reconstruction</h2>
-<p><strong>Source form</strong>  <code>x_comp = S* 𝒯*_comp D y</code>  (Eq 2)</p>
+<p><strong>Source form</strong>  \(x_{comp} = S* \mathcal{T}*_{comp} D y\)  (Eq 2)</p>
 <p><strong>Standardized</strong>  \(x_{\text{comp}} = S^{*}\,\mathcal{T}^{*}_{\text{comp}}\, D\, y\)</p>
 <p><strong>Meaning</strong> — stack all TEs' k-space into one dataset <code>y</code>, density-compensate (<code>D</code>, a diagonal ramp that
 up-weights outer k-space to counter radial oversampling of the center), adjoint-NUFFT back to image space,
 coil-combine (<code>S*</code>). Result: a single high-SNR image at the <em>average</em> TE.</p>
-<p><strong>Dimensions</strong> — \(y ∈ ℂ^{M·ETL·C}\), \(D ∈ ℝ^{(M·ETL)×(M·ETL)}\) (diag ≥ 0), \(𝒯*_comp : ℂ^{M·ETL·C}→ℂ^{N·C}\),
-\(S* : ℂ^{N·C}→ℂ^{N}\), \(x_comp ∈ ℂ^{N}\).</p>
+<p><strong>Dimensions</strong> — \(y \in  \mathbb{C}^{M\cdot ETL\cdot C}\), \(D \in  \mathbb{R}^{(M\cdot ETL)\times (M\cdot ETL)}\) (diag ≥ 0), \(\mathcal{T}*_{comp} : \mathbb{C}^{M\cdot ETL\cdot C}\to \mathbb{C}^{N\cdot C}\),
+\(S* : \mathbb{C}^{N\cdot C}\to \mathbb{C}^{N}\), \(x_{comp} \in  \mathbb{C}^{N}\).</p>
 <p><strong>Assumptions</strong> — combining across TEs is acceptable <em>for anatomy</em> (contrast is averaged, lost for T2 fitting).
-<code>D</code> makes <code>𝒯*_comp D</code> approximate a true inverse (gridding recon).</p>
+<code>D</code> makes \(\mathcal{T}*_{comp} D\) approximate a true inverse (gridding recon).</p>
 <p><strong>MRI interpretation</strong> — the "composite image": more views → fewer streaks → best anatomical image, at the cost
 of T2 information. Ramp DCF is the classic filtered-back-projection weighting.</p>
 <p><strong>DL connection</strong> — <code>x_comp</code> (or its zero-filled version) is the <strong>input</strong> to the composite network <code>f_comp</code>.</p>
 <p><strong>Verification status</strong> — ✅ correct under the density-compensated-adjoint (gridding) convention.</p>
 <hr />
 <h2 id="e3-per-te-image-reconstruction">E3 — Per-TE image reconstruction</h2>
-<p><strong>Source form</strong>  <code>xᵢ = S* 𝒯*ᵢ D̄ yᵢ</code>  (Eq 3)</p>
+<p><strong>Source form</strong>  \(x_i = S* \mathcal{T}*_i \bar{D} y_i\)  (Eq 3)</p>
 <p><strong>Standardized</strong>  \(x_i = S^{*}\,\mathcal{T}^{*}_i\, \bar{D}\, y_i\)</p>
-<p><strong>Meaning</strong> — reconstruct each TE image separately (<code>D̄</code> = single-TE version of <code>D</code>). Each <code>yᵢ</code> is highly
-undersampled (few views/TE), so <code>xᵢ</code> is streaky — this is exactly the problem the network fixes.</p>
-<p><strong>Dimensions</strong> — \(yᵢ ∈ ℂ^{M·C}\), \(D̄ ∈ ℝ^{M×M}\), \(𝒯*ᵢ : ℂ^{M·C}→ℂ^{N·C}\), \(xᵢ ∈ ℂ^{N}\).</p>
-<p><strong>MRI interpretation</strong> — the multicontrast time series \({xᵢ}_{i=1}^{ETL}\) that gets voxel-wise fit to a T2 map
+<p><strong>Meaning</strong> — reconstruct each TE image separately (\(\bar{D}\) = single-TE version of <code>D</code>). Each \(y_i\) is highly
+undersampled (few views/TE), so \(x_i\) is streaky — this is exactly the problem the network fixes.</p>
+<p><strong>Dimensions</strong> — \(y_i \in  \mathbb{C}^{M\cdot C}\), \(\bar{D} \in  \mathbb{R}^{M\times M}\), \(\mathcal{T}*_i : \mathbb{C}^{M\cdot C}\to \mathbb{C}^{N\cdot C}\), \(x_i \in  \mathbb{C}^{N}\).</p>
+<p><strong>MRI interpretation</strong> — the multicontrast time series \({x_i}_{i=1}^{ETL}\) that gets voxel-wise fit to a T2 map
 via dictionary matching (SEPG signal model). Highly aliased when views/TE is small.</p>
-<p><strong>DL connection</strong> — <code>{xᵢ}</code> are the <strong>channels</strong> the TE/T2 network cleans up before projection to the subspace.</p>
+<p><strong>DL connection</strong> — \({x_i}\) are the <strong>channels</strong> the TE/T2 network cleans up before projection to the subspace.</p>
 <p><strong>Verification status</strong> — ✅ correct (bar notation = single-TE slice of D, Audit A4).</p>
 <hr />
 <h2 id="e4-principal-component-subspace-model">E4 — Principal-component (subspace) model</h2>
-<p><strong>Source form</strong>  <code>Ux = U S* ℱ* D y</code>  (Eq 4)</p>
-<p><strong>Standardized</strong>  \(U x = U\, S^{*}\,\mathcal{F}^{*}\, D\, y\)  ⟹ PC images <code>= U · (per-TE recon)</code></p>
+<p><strong>Source form</strong>  \(Ux = U S* \mathcal{F}* D y\)  (Eq 4)</p>
+<p><strong>Standardized</strong>  \(U x = U\, S^{*}\,\mathcal{F}^{*}\, D\, y\)  ⟹ PC images \(= U \cdot  (per-TE recon)\)</p>
 <p><strong>Meaning</strong> — instead of <code>ETL = 32</code> TE channels, project onto the first <code>P = 4</code> SVD components of the SEPG
 signal dictionary. <code>U</code> maps the 32 TE images to 4 PC images that capture 99.96% of signal-decay variance.</p>
-<p><strong>Dimensions</strong> — \(U ∈ ℂ^{(N·P)×(N·ETL)}\), \(x ∈ ℂ^{N·ETL}\) (stacked TE images), \(Ux ∈ ℂ^{N·P}\).</p>
+<p><strong>Dimensions</strong> — \(U \in  \mathbb{C}^{(N\cdot P)\times (N\cdot ETL)}\), \(x \in  \mathbb{C}^{N\cdot ETL}\) (stacked TE images), \(Ux \in  \mathbb{C}^{N\cdot P}\).</p>
 <p><strong>Why it matters</strong> — (1) cuts compute/memory 32→4; (2) exploits temporal sparsity, exactly as in CS
 subspace reconstruction (refs 22, 23). This is the <strong>CS→DL bridge in one line</strong>: the learned network operates
 in a <em>compressed temporal subspace</em> motivated by classical CS.</p>
-<p><strong>Notation caveat</strong> — here <code>ℱ</code> is the same NUFFT called <code>𝒯</code> in E1–E3 (Audit A1).</p>
+<p><strong>Notation caveat</strong> — here \(\mathcal{F}\) is the same NUFFT called \(\mathcal{T}\) in E1–E3 (Audit A1).</p>
 <p><strong>Verification status</strong> — ✅ correct; note glyph switch 𝒯→ℱ.</p>
 <hr />
 <h2 id="e5-e6-unified-forward-adjoint-notation">E5 / E6 — Unified forward / adjoint notation</h2>
-<p><strong>Source form</strong>  <code>x' = A* D y</code>  (Eq 5)   <code>ŷ = A x'</code>  (Eq 6)</p>
+<p><strong>Source form</strong>  <code>x' = A* D y</code>  (Eq 5)   \(\hat{y} = A x'\)  (Eq 6)</p>
 <p><strong>Standardized</strong>  \(x' = A^{*} D y\) (image estimate),  \(\hat{y} = A x'\) (project back to k-space)</p>
 <p><strong>Definitions (from text, p.2477):</strong>
-- Composite images: <code>A := 𝒯*_comp S</code>, <code>U = I</code>.
-- PC images: <code>A := ℱ* S U*</code>, <code>U</code> as in E4.
-- <strong>Convention (A2):</strong> thereafter <code>A* := Aᴴ D</code>, so <code>A</code>,<code>A*</code> are <em>not</em> true adjoints; <code>D</code> is used only in the
+- Composite images: \(A := \mathcal{T}*_{comp} S\), <code>U = I</code>.
+- PC images: \(A := \mathcal{F}* S U*\), <code>U</code> as in E4.
+- <strong>Convention (A2):</strong> thereafter \(A* := A^H D\), so <code>A</code>,<code>A*</code> are <em>not</em> true adjoints; <code>D</code> is used only in the
   image direction (k-space→image), never in the forward (image→k-space) direction.</p>
 <p><strong>Meaning</strong> — a single symbol pair to describe <em>both</em> pipelines. <code>A*</code> (with <code>D</code>) = go from measured k-space to
-image; <code>A</code> = go from image to predicted k-space <code>ŷ</code>.</p>
+image; <code>A</code> = go from image to predicted k-space \(\hat{y}\).</p>
 <p><strong>Optimization interpretation</strong> — <code>A</code>,<code>A*</code> are the forward/back operators inside every DC step (E7–E9) and the
 self-supervised loss (E12–E13).</p>
 <p><strong>DL connection</strong> — the whole point of physics-driven DL: the network is wrapped <em>around</em> fixed <code>A</code>,<code>A*</code>.
-🔍 <strong>For your code (Audit A2):</strong> implement a <strong>true</strong> <code>Aᴴ</code> that passes the dot-product test
-<code>⟨Ax, y⟩ ≈ ⟨x, Aᴴy⟩</code>, and <em>separately</em> a preconditioned <code>A*_paper = Aᴴ D</code>. Test the first; use the second in DC.</p>
+🔍 <strong>For your code (Audit A2):</strong> implement a <strong>true</strong> \(A^H\) that passes the dot-product test
+\(\langle Ax, y\rangle  \approx  \langle x, A^{Hy}\rangle \), and <em>separately</em> a preconditioned \(A*_{paper} = A^H D\). Test the first; use the second in DC.</p>
 <p><strong>Verification status</strong> — ✅ correct <strong>only under the stated non-adjoint convention</strong> — flag when teaching.</p>
 <hr />
 <h2 id="e7-data-consistency-objective-per-cascade">E7 — Data-consistency objective (per cascade)</h2>
-<p><strong>Source form</strong>  \(½ ‖ A_{CNN}^{(j)}(x'^{(j-1)}) − y ‖²\)  (Eq 7)</p>
+<p><strong>Source form</strong>  \(\tfrac12  \| A_{CNN}^{(j)}(x'^{(j-1)}) - y \|^2\)  (Eq 7)</p>
 <p><strong>Standardized</strong>  \(\tfrac12\big\| A\, f_{\text{CNN}}^{(j)}\!\big(x'^{(j-1)}\big) - y \big\|_2^2\)</p>
 <p><strong>Meaning</strong> — after the <code>j</code>-th CNN block denoises the current image, measure how far its <em>predicted</em> k-space
 <code>A f_CNN(x')</code> is from the <em>acquired</em> k-space <code>y</code>. DC minimizes this.</p>
-<p><strong>Dimensions</strong> — \(x'^{(j-1)} ∈ ℂ^{N·τ}\) (τ = 1 composite, τ = P PC), \(y ∈ ℂ^{M·ETL·C}\).</p>
+<p><strong>Dimensions</strong> — \(x'^{(j-1)} \in  \mathbb{C}^{N\cdot \tau }\) (τ = 1 composite, τ = P PC), \(y \in  \mathbb{C}^{M\cdot ETL\cdot C}\).</p>
 <p><strong>Optimization interpretation</strong> — the quadratic data term of the unrolled variational problem; the CNN supplies
 the (learned, implicit) regularizer.</p>
 <p><strong>Verification status</strong> — ✅ correct.</p>
 <hr />
 <h2 id="e8-gradient-of-the-dc-objective">E8 — Gradient of the DC objective</h2>
-<p><strong>Source form</strong>  \(d/dx̂'^{(j)} [ ½‖Ax̂'^{(j)} − y‖² ] = A*(Ax̂'^{(j)} − y)\)  (Eq 8)</p>
+<p><strong>Source form</strong>  \(d/d\hat{x}'^{(j)} [ \tfrac12 \|A\hat{x}'^{(j)} - y\|^2 ] = A*(A\hat{x}'^{(j)} - y)\)  (Eq 8)</p>
 <p><strong>Standardized</strong>  \(\nabla_{\hat{x}'^{(j)}}\Big[\tfrac12\|A\hat{x}'^{(j)}-y\|_2^2\Big] = A^{*}\big(A\hat{x}'^{(j)} - y\big)\)</p>
-<p><strong>Derivation</strong> — <code>f(x)=½‖Ax−y‖²</code>. For complex <code>x</code>, the Wirtinger gradient is <code>∇f = Aᴴ(Ax−y)</code>. The paper writes
-<code>A*</code> which under convention A2 is <code>AᴴD</code> ⟹ this is a <strong>preconditioned</strong> gradient, not the exact one.</p>
-<p><strong>MRI interpretation</strong> — residual in k-space <code>(Ax̂'−y)</code> pushed back to image space and used to correct the image.</p>
-<p><strong>DL connection</strong> — this is the gradient the DC layer descends; because <code>η</code> is learned (E9), backprop can absorb
+<p><strong>Derivation</strong> — \(f(x)=\tfrac12 \|Ax-y\|^2\). For complex <code>x</code>, the Wirtinger gradient is \(\nabla f = A^H(Ax-y)\). The paper writes
+<code>A*</code> which under convention A2 is \(A^{HD}\) ⟹ this is a <strong>preconditioned</strong> gradient, not the exact one.</p>
+<p><strong>MRI interpretation</strong> — residual in k-space \((A\hat{x}'-y)\) pushed back to image space and used to correct the image.</p>
+<p><strong>DL connection</strong> — this is the gradient the DC layer descends; because \(\eta \) is learned (E9), backprop can absorb
 the <code>D</code> preconditioner, so the swap is harmless in practice (Audit A8).</p>
 <p><strong>Verification status</strong> — ✅ correct as a <strong>preconditioned</strong> gradient under convention A2. (Exact gradient with a
 true adjoint would drop <code>D</code>.)</p>
 <hr />
 <h2 id="e9-data-consistency-update-learned-gradient-descent">E9 — Data-consistency update (learned gradient descent)</h2>
-<p><strong>Source form</strong>  \(x''^{(j)} = DC^{(j)}(x̂'^{(j)}) = x̂'^{(j)} − η A*(A x̂'^{(j)} − y)\)  (Eq 9)</p>
-<p><strong>Standardized</strong>  \(x''^{(j)} = \hat{x}'^{(j)} - \eta\, A^{*}\big(A\hat{x}'^{(j)} - y\big)\),  with \(x̂'^{(j)} := f_{\text{CNN}}^{(j)}(x'^{(j-1)})\), \(x'^{(0)} = A* y\)</p>
-<p><strong>Meaning</strong> — one gradient-descent step toward data consistency after each CNN denoise. <code>η</code> is a <strong>trainable</strong>
+<p><strong>Source form</strong>  \(x''^{(j)} = DC^{(j)}(\hat{x}'^{(j)}) = \hat{x}'^{(j)} - \eta  A*(A \hat{x}'^{(j)} - y)\)  (Eq 9)</p>
+<p><strong>Standardized</strong>  \(x''^{(j)} = \hat{x}'^{(j)} - \eta\, A^{*}\big(A\hat{x}'^{(j)} - y\big)\),  with \(\hat{x}'^{(j)} := f_{\text{CNN}}^{(j)}(x'^{(j-1)})\), \(x'^{(0)} = A* y\)</p>
+<p><strong>Meaning</strong> — one gradient-descent step toward data consistency after each CNN denoise. \(\eta \) is a <strong>trainable</strong>
 scalar step size learned by backprop. <code>K = 5</code> such CNN→DC cascades.</p>
 <p><strong>This is the heart of the paper.</strong> Compare directly to proximal gradient / ISTA:</p>
 <pre><code>ISTA:              x^{k+1} = prox_{γλR}( x^k − γ Aᴴ(Ax^k − y) )
@@ -162,27 +162,27 @@ Unrolled (E9):     x^{k+1} = DC^{(k)}( f_CNN^{(k)}(x^k) )     ← CNN replaces p
 </code></pre>
 <p>The CNN plays the role of the proximal operator of an <em>implicit, learned</em> regularizer; DC enforces the physics.</p>
 <p><strong>DL connection</strong> — a textbook <strong>model-based DL / unrolled-optimization</strong> block (MoDL/VarNet family, refs 25–30).
-Weights may be shared or per-cascade; here <code>η</code> is learned.</p>
+Weights may be shared or per-cascade; here \(\eta \) is learned.</p>
 <p><strong>Verification status</strong> — ✅ correct (learned-step preconditioned gradient descent).</p>
 <hr />
 <h2 id="e10-composite-network-supervised">E10 — Composite network (supervised)</h2>
-<p><strong>Source form</strong>  <code>x̂ = f_comp(y', S)</code>  (Eq 10)</p>
+<p><strong>Source form</strong>  \(\hat{x} = f_{comp}(y', S)\)  (Eq 10)</p>
 <p><strong>Standardized</strong>  \(\hat{x} = f_{\text{comp}}(y', S)\)   (<code>y'</code> = zero-filled data, <code>S</code> = coil maps)</p>
 <p><strong>Meaning</strong> — the composite (anatomy) network maps zero-filled undersampled data + coil maps to a clean
 composite image. Trainable in a <strong>fully supervised</strong> way because a well-sampled composite target <em>exists</em>.</p>
 <p><strong>Verification status</strong> — ✅ correct.</p>
 <hr />
 <h2 id="e11-supervised-image-space-loss-composite">E11 — Supervised image-space loss (composite)</h2>
-<p><strong>Source form</strong>  <code>L_x(x̂,x) = α ‖x̂−x‖₁/‖x‖₁ + (1−α) ‖x̂−x‖₂/‖x‖₂</code>  (Eq 11)</p>
+<p><strong>Source form</strong>  \(L_x(\hat{x},x) = \alpha  \|\hat{x}-x\|_1/\|x\|_1 + (1-\alpha ) \|\hat{x}-x\|_2/\|x\|_2\)  (Eq 11)</p>
 <p><strong>Standardized</strong>  \(\mathcal{L}_x(\hat{x},x)=\alpha\dfrac{\|\hat{x}-x\|_1}{\|x\|_1}+(1-\alpha)\dfrac{\|\hat{x}-x\|_2}{\|x\|_2},\quad \alpha=\tfrac12\)</p>
 <p><strong>Meaning</strong> — scale-invariant blend of relative ℓ¹ (sharp/robust) and relative ℓ² (smooth) image error.
-Normalizing by <code>‖x‖</code> makes the loss invariant to overall image scale.</p>
+Normalizing by \(\|x\|\) makes the loss invariant to overall image scale.</p>
 <p><strong>Statistical note (Expert E)</strong> — mixing ℓ¹/ℓ² is a robustness/MAP-flavored choice, <em>not</em> an unbiased estimator
 of anything in particular; treat the 50/50 split as a tuned hyperparameter (Audit A9).</p>
 <p><strong>Verification status</strong> — ✅ correct.</p>
 <hr />
 <h2 id="e12-self-supervised-k-space-projection-tet2-network">E12 — Self-supervised k-space projection (TE/T2 network)</h2>
-<p><strong>Source form</strong>  \(ŷ = A f_{T2}(y', S)\)  (Eq 12)</p>
+<p><strong>Source form</strong>  \(\hat{y} = A f_{T2}(y', S)\)  (Eq 12)</p>
 <p><strong>Standardized</strong>  \(\hat{y} = A\, f_{T2}(y', S)\)</p>
 <p><strong>Meaning</strong> — for T2 mapping there is <strong>no</strong> clean target (views/TE ≤ 12, no well-sampled reference). So the
 network output <code>f_T2(y')</code> is projected <em>back to k-space</em> by <code>A</code>, and the loss is computed <strong>in k-space</strong> against
@@ -194,7 +194,7 @@ and Comparison #18 (supervised vs self-supervised). Worth interrogating for your
 <p><strong>Verification status</strong> — ✅ correct as stated; ⚠️ the "loss over entire y" choice is a design decision to scrutinize.</p>
 <hr />
 <h2 id="e13-self-supervised-k-space-loss-tet2">E13 — Self-supervised k-space loss (TE/T2)</h2>
-<p><strong>Source form</strong>  <code>L_y(ŷ,y) = α ‖ŷ−y‖₁/‖y‖₁ + (1−α) ‖ŷ−y‖₂/‖y‖₂</code>  (Eq 13)</p>
+<p><strong>Source form</strong>  \(L_y(\hat{y},y) = \alpha  \|\hat{y}-y\|_1/\|y\|_1 + (1-\alpha ) \|\hat{y}-y\|_2/\|y\|_2\)  (Eq 13)</p>
 <p><strong>Standardized</strong>  \(\mathcal{L}_y(\hat{y},y)=\alpha\dfrac{\|\hat{y}-y\|_1}{\|y\|_1}+(1-\alpha)\dfrac{\|\hat{y}-y\|_2}{\|y\|_2},\quad \alpha=\tfrac12\)</p>
 <p><strong>Meaning</strong> — same relative ℓ¹/ℓ² blend as E11 but in <strong>k-space</strong>. Minimizing k-space error is the only training
 signal for the T2 pathway. Note (2.5): T2 error is <em>not</em> in the loss — it is used only for <strong>model selection</strong>
@@ -219,12 +219,12 @@ signal for the T2 pathway. Note (2.5): T2 error is <em>not</em> in the loss — 
 <tr>
 <td>2</td>
 <td><strong>E5/E6 + A2</strong></td>
-<td>The forward/adjoint convention. Everything (DC, self-supervision) rides on getting <code>A</code>,<code>Aᴴ</code> right.</td>
+<td>The forward/adjoint convention. Everything (DC, self-supervision) rides on getting <code>A</code>,\(A^H\) right.</td>
 </tr>
 <tr>
 <td>3</td>
 <td><strong>E1</strong></td>
-<td>The MRI forward model. If you can't derive/implement <code>A</code> and its true <code>Aᴴ</code>, nothing downstream is trustworthy.</td>
+<td>The MRI forward model. If you can't derive/implement <code>A</code> and its true \(A^H\), nothing downstream is trustworthy.</td>
 </tr>
 <tr>
 <td>4</td>

@@ -56,8 +56,8 @@ this paper (Lustig 2007; Candès–Romberg–Tao; Donoho) — labeled <strong>Ba
 <h2 id="1-the-three-ingredients-of-compressed-sensing-background-standard-cs-theory">1. The three ingredients of compressed sensing  (Background — standard CS theory)</h2>
 <p>CS recovers a signal from <strong>far fewer measurements than Nyquist</strong> when three conditions hold:</p>
 <ol>
-<li>🔵 <strong>Sparsity / compressibility.</strong> The signal <code>x</code> has a representation <code>x = Ψα</code> in some transform <code>Ψ</code>
-   (wavelets, temporal PCs, finite differences) where <code>α</code> has few large entries (<code>‖α‖₀ = k ≪ N</code>) or decays fast
+<li>🔵 <strong>Sparsity / compressibility.</strong> The signal <code>x</code> has a representation \(x = \Psi \alpha \) in some transform \(\Psi \)
+   (wavelets, temporal PCs, finite differences) where \(\alpha \) has few large entries (\(\|\alpha \|_0 = k \ll  N\)) or decays fast
    (compressible). <em>In this paper:</em> the <strong>temporal</strong> decay across 32 TEs lives in a <code>P = 4</code>-dim SVD subspace
    (Eq 4) — 99.96% of variance in 4 PCs. That is the sparsity CS exploits here.</li>
 <li>🔵 <strong>Incoherence.</strong> The sensing operator (Fourier sampling) must be incoherent with the sparsity basis, so
@@ -65,7 +65,7 @@ this paper (Lustig 2007; Candès–Romberg–Tao; Donoho) — labeled <strong>Ba
    pseudo-golden-angle</strong> sampling → incoherent, noise-like streaks (ideal for CS), and each TE sees different
    angles → temporal incoherence.</li>
 <li>🔵 <strong>Nonlinear recovery.</strong> Solve a convex program that promotes sparsity:
-   <code>min_x ½‖Ax − y‖₂² + λ‖Ψx‖₁</code> (analysis) or <code>min_α ½‖AΨα − y‖₂² + λ‖α‖₁</code> (synthesis).</li>
+   \(min_x \tfrac12 \|Ax - y\|_2^2 + \lambda \|\Psi x\|_1\) (analysis) or \(min_\alpha  \tfrac12 \|A\Psi \alpha  - y\|_2^2 + \lambda \|\alpha \|_1\) (synthesis).</li>
 </ol>
 <p>🟢 <strong>Intuition:</strong> Nyquist says "sample at 2× the bandwidth." CS says "if the signal is sparse <em>and</em> your
 sampling is incoherent, a handful of random-ish measurements plus an ℓ¹ solve recovers it." Radial MRI is
@@ -106,18 +106,18 @@ boundary, and can classical phase-transition theory predict it?</em> (See <code>
 <tbody>
 <tr>
 <td>Model</td>
-<td><code>x = Ψα</code>, penalize <code>‖α‖₁</code></td>
-<td>penalize <code>‖Ψx‖₁</code> directly</td>
+<td>\(x = \Psi \alpha \), penalize \(\|\alpha \|_1\)</td>
+<td>penalize \(\|\Psi x\|_1\) directly</td>
 </tr>
 <tr>
 <td>Unknown</td>
-<td>coefficients <code>α</code></td>
+<td>coefficients \(\alpha \)</td>
 <td>image <code>x</code></td>
 </tr>
 <tr>
 <td>TV is...</td>
 <td>—</td>
-<td>an <strong>analysis</strong> prior (<code>Ψ = ∇</code>)</td>
+<td>an <strong>analysis</strong> prior (\(\Psi  = \nabla \))</td>
 </tr>
 <tr>
 <td>This paper</td>
