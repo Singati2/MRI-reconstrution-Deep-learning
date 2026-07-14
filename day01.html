@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 1 · Day 1 — Complex numbers, inner products &amp; the Hermitian adjoint</title>
+<script>
+window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},
+  options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+:root{--bg:#f9f9f7;--surface:#fcfcfb;--fg:#0b0b0b;--sec:#52514e;--muted:#898781;--border:#e1e0d9;
+  --code-bg:#f0efec;--accent:#2a78d6;--good:#006300;--bad:#d03b3b;--card:#fff;--quote-bg:#f0efec}
+@media(prefers-color-scheme:dark){:root{--bg:#0d0d0d;--surface:#1a1a19;--fg:#fff;--sec:#c3c2b7;
+  --muted:#898781;--border:#2c2c2a;--code-bg:#161b22;--accent:#3987e5;--good:#0ca30c;--bad:#e66767;
+  --card:#161b22;--quote-bg:#161b22}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:28px 20px 96px}
+.nav{font-size:14px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.nav a{color:var(--accent);text-decoration:none}
+h1{font-size:1.8em;line-height:1.22}
+h2{font-size:1.35em;margin-top:1.8em;border-bottom:1px solid var(--border);padding-bottom:.25em}
+h3{margin-top:1.3em;font-size:1.1em}
+code{background:var(--code-bg);padding:.12em .38em;border-radius:5px;font-size:.88em;
+  font-family:ui-monospace,Menlo,Consolas,monospace}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;overflow-x:auto}
+pre code{background:none;padding:0}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin:16px 0}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:20px;
+  background:var(--code-bg);color:var(--sec);margin-right:6px}
+.grid{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;font-size:.95em;margin:8px 0}
+.grid div:nth-child(odd){color:var(--sec);font-weight:600}
+button{font:inherit;font-size:14px;cursor:pointer;border:1px solid var(--border);background:var(--surface);
+  color:var(--fg);border-radius:8px;padding:7px 13px}
+button:hover{border-color:var(--accent)}
+table{border-collapse:collapse;width:100%;font-size:.92em;margin:10px 0}
+th,td{border:1px solid var(--border);padding:7px 10px;text-align:left}
+th{background:var(--code-bg)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.ok{color:var(--good);font-weight:700}.no{color:var(--bad);font-weight:700}
+.q{margin:14px 0;padding:16px 18px;border:1px solid var(--border);border-radius:12px;background:var(--card)}
+.q .stem{font-weight:600;margin-bottom:10px}
+.opt{display:block;width:100%;text-align:left;margin:7px 0;padding:10px 12px;border-radius:9px;
+  border:1px solid var(--border);background:var(--surface)}
+.opt:hover{border-color:var(--accent)}
+.opt.correct{border-color:var(--good);background:color-mix(in srgb,var(--good) 12%,transparent)}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.opt:disabled{cursor:default;opacity:.85}
+.explain{margin-top:10px;font-size:14px;color:var(--sec);border-left:3px solid var(--accent);
+  padding:8px 12px;background:var(--quote-bg);border-radius:0 6px 6px 0}
+.score{font-weight:700}
+.chk{list-style:none;padding:0}.chk li{margin:6px 0}
+.foot{margin-top:52px;padding-top:16px;border-top:1px solid var(--border);color:var(--muted);font-size:13px}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px;
+  background:var(--accent);color:#fff}
+.time{color:var(--muted);font-size:13px;font-weight:600}
+</style></head>
+<body><div class="wrap">
+<div class="nav">📚 <a href="index.html">Study index</a> · <a href="interactive.html">Concept lesson</a> ·
+<span class="pill">Week 1 · Day 1</span></div>
+
+<h1>Day 1 — Complex numbers, inner products &amp; the Hermitian adjoint</h1>
+<p><span class="tag">🧮 linear algebra</span><span class="tag">🟠 MRI</span><span class="tag">⚙️ coding</span>
+<span class="tag">✅ quiz</span> The single foundation the whole paper stands on: MRI data is
+<strong>complex-valued</strong>, so every &ldquo;transpose&rdquo; is a <strong>Hermitian</strong> transpose,
+and the reconstruction gradient uses the <strong>adjoint</strong> \(A^{H}\), not \(A^{T}\).</p>
+
+<div class="card">
+<h3 style="margin-top:0">Day-1 at a glance</h3>
+<div class="grid">
+<div>Learning objectives</div><div>(1) Manipulate complex numbers &amp; the conjugate. (2) Compute the
+complex inner product \(\langle u,v\rangle=\sum_i \bar u_i v_i\). (3) Distinguish transpose \(A^{T}\) from
+Hermitian transpose \(A^{H}=\overline{A}^{T}\). (4) State and <em>use</em> the adjoint identity
+\(\langle Ax,y\rangle=\langle x,A^{H}y\rangle\). (5) Explain why the recon gradient is
+\(A^{H}(Ax-y)\).</div>
+<div>Required source</div><div>Toner 2025 §2.1, Eqs&nbsp;1&ndash;6; and Source-Audit item <strong>A2</strong>
+(the \(A^{*}:=A^{H}D\) convention).</div>
+<div>Math concepts</div><div>complex conjugate, modulus, complex inner product, norm, transpose vs. Hermitian
+transpose, adjoint operator.</div>
+<div>MRI concepts</div><div>k-space is complex; coil combination and Fourier encoding are linear complex
+operators; why phase matters.</div>
+<div>DL connection</div><div>the data-consistency gradient \(A^{H}(A\hat x-y)\) in Eq&nbsp;8&ndash;9 is an
+adjoint — get this wrong and every unrolled cascade is wrong.</div>
+<div>Mastery to advance</div><div>score ≥ 3/3 on the quiz <em>and</em> the live adjoint widget shows
+\(A^{H}\) matching while \(A^{T}\) does not.</div>
+</div></div>
+
+<h2>1 · Concept review <span class="time">~15 min</span></h2>
+<p>A complex number \(z=a+bi\) has conjugate \(\bar z=a-bi\), modulus \(|z|=\sqrt{a^2+b^2}\), and
+\(z\bar z=|z|^2\) (real, \(\ge 0\)). MRI signals are complex because each k-space sample carries a
+<em>magnitude and a phase</em>; the phase encodes spatial position and off-resonance. Throw the phase away
+(magnitude-only) and you lose information the reconstruction needs — one reason the paper keeps complex data
+end-to-end (it uses a complex-weight network via MERLIN).</p>
+
+<h2>2 · Main lesson <span class="time">~30 min</span></h2>
+<h3>The complex inner product</h3>
+<p>For \(u,v\in\mathbb{C}^{N}\), the inner product conjugates the <em>first</em> argument:</p>
+<p style="text-align:center">\( \langle u,v\rangle=\sum_{i=1}^{N}\bar u_i\,v_i,\qquad
+\|u\|_2=\sqrt{\langle u,u\rangle}=\sqrt{\textstyle\sum_i|u_i|^2}. \)</p>
+<p>The conjugate is what makes \(\langle u,u\rangle=\sum|u_i|^2\) real and non-negative — a genuine length.
+Without it, \(\sum u_i^2\) could be complex or negative. This is the whole reason the &ldquo;transpose&rdquo;
+must conjugate.</p>
+
+<h3>Transpose vs. Hermitian transpose</h3>
+<table>
+<thead><tr><th></th><th>Transpose \(A^{T}\)</th><th>Hermitian transpose \(A^{H}\) (a.k.a. \(A^{*}\), adjoint)</th></tr></thead>
+<tbody>
+<tr><td>Definition</td><td>\((A^{T})_{ij}=A_{ji}\)</td><td>\((A^{H})_{ij}=\overline{A_{ji}}\) — transpose <em>and</em> conjugate</td></tr>
+<tr><td>Real matrices</td><td colspan="2">identical (\(A^{T}=A^{H}\))</td></tr>
+<tr><td>Complex matrices</td><td>does <strong>not</strong> satisfy the adjoint identity</td><td>satisfies \(\langle Ax,y\rangle=\langle x,A^{H}y\rangle\)</td></tr>
+<tr><td>In MRI</td><td>almost never what you want</td><td>the correct back-projection: \((\mathcal{T}S)^{H}=S^{H}\mathcal{T}^{H}\)</td></tr>
+</tbody></table>
+<div class="card"><span class="tag">⚠️ Audit A2</span> Toner 2025 writes the reconstruction operator as \(A^{*}\)
+but <em>redefines</em> it to fold in density compensation: \(A^{*}:=A^{H}D\). So the paper&rsquo;s \(A^{*}\) is a
+<strong>preconditioned back-projection, not a true adjoint</strong> — a dot-product test on it fails <em>by
+design</em>. Today you build the true \(A^{H}\) and confirm it passes; later you keep it separate from the DC-step
+\(A^{*}\).</div>
+
+<h2>3 · Equation derivation <span class="time">~25 min</span></h2>
+<p>Derive the gradient used in every data-consistency step (Eq&nbsp;8). Let
+\(f(x)=\tfrac12\|Ax-y\|_2^2=\tfrac12\langle Ax-y,\;Ax-y\rangle\) with \(x\in\mathbb{C}^{N}\).</p>
+<p style="text-align:center">\( f(x)=\tfrac12\langle Ax,Ax\rangle-\operatorname{Re}\langle Ax,y\rangle+\tfrac12\langle y,y\rangle. \)</p>
+<p>Using the Wirtinger calculus (treat \(x\) and \(\bar x\) as independent; the descent direction is the
+gradient w.r.t. \(\bar x\)), and the adjoint identity to move \(A\) across the inner product:</p>
+<p style="text-align:center">\( \nabla_{\bar x} f = A^{H}(Ax-y). \)</p>
+<div class="card"><span class="tag">📌 Remember</span> The \(A^{H}\) here is <em>forced</em> by the complex inner
+product — it is the only operator for which \(\langle Ax,\,Ax-y\rangle\) differentiates cleanly. Substitute
+\(A^{T}\) and the algebra breaks: you would be descending the wrong direction. That is why Eqs&nbsp;8&ndash;9
+are written with \(A^{*}\)/\(A^{H}\), never \(A^{T}\).</div>
+
+<h2>4 · Coding activity — the adjoint (dot-product) test <span class="time">~25 min</span></h2>
+<p>The canonical unit test for any linear operator: pick random \(x,y\) and check
+\(\langle Ax,y\rangle\approx\langle x,A^{H}y\rangle\). Below is a <strong>live</strong> version on a fixed
+complex \(3\times3\) matrix \(A\). Re-roll the random vectors: \(A^{H}\) always matches (to machine precision);
+the plain transpose \(A^{T}\) does not.</p>
+
+<div class="card">
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
+<button id="reroll">🎲 Re-roll x, y</button>
+<span id="verdict"></span>
+</div>
+<table>
+<thead><tr><th>Quantity</th><th class="num">Real</th><th class="num">Imag</th><th>Matches \(\langle Ax,y\rangle\)?</th></tr></thead>
+<tbody id="rows"></tbody>
+</table>
+<p style="font-size:13px;color:var(--sec);margin:6px 0 0">Inner product convention:
+\(\langle u,v\rangle=\sum_i \bar u_i v_i\). &ldquo;Matches&rdquo; = agrees to within \(10^{-9}\).</p>
+</div>
+
+<p>The Python equivalent (in the repo — <code>code/mri_operators.py</code>) does the same test on the
+Fourier operator and reports <code>5.8e-16</code>:</p>
+<pre><code>lhs = np.vdot(forward(x, mask), y)   # &lt;A x, y&gt;
+rhs = np.vdot(x, adjoint(y, mask))   # &lt;x, A^H y&gt;
+rel_err = abs(lhs - rhs) / abs(lhs)  # ~1e-16  (PASS)</code></pre>
+<p><em>Note:</em> NumPy&rsquo;s <code>np.vdot(a, b)</code> conjugates its <strong>first</strong> argument — it
+already implements \(\langle a,b\rangle=\sum \bar a_i b_i\). Using <code>np.dot</code> (no conjugate) would be
+the \(A^{T}\) mistake.</p>
+
+<h2>5 · Quiz <span class="score" id="score">(0 / 3)</span></h2>
+<div id="quiz"></div>
+
+<h2>6 · Reflection &amp; expected output</h2>
+<div class="card"><span class="tag">✍️ reflection</span> In your own words: why does using magnitude-only
+(discarding phase) not just lose image quality but actually <em>break</em> the adjoint machinery the recon
+relies on? Write 2&ndash;3 sentences in <code>notes/</code>.</div>
+<p><strong>Expected output of Day 1:</strong> (a) a one-paragraph note on complex phase in MRI; (b) the adjoint
+widget above showing \(A^{H}\) match / \(A^{T}\) mismatch; (c) <code>python3 code/mri_operators.py</code> printing
+a relative error &lt; 1e-10; (d) 3/3 on the quiz.</p>
+
+<h2>7 · Mastery checklist</h2>
+<ul class="chk" id="mastery"></ul>
+<button id="resetChk" style="margin-top:8px">Reset checklist</button>
+
+<div class="foot">Week 1 · Day 1 of the 12-week plan · grounded in Toner 2025 §2.1 (Eqs 1&ndash;6) &amp; Audit A2 ·
+next: <em>Day 2 — vectors, matrices, eigen/SVD and the DFT.</em></div>
+
+<script>
+// ---------- complex helpers ----------
+const C=(re,im=0)=>({re,im});
+const cadd=(a,b)=>C(a.re+b.re,a.im+b.im);
+const cmul=(a,b)=>C(a.re*b.re-a.im*b.im, a.re*b.im+a.im*b.re);
+const conj=a=>C(a.re,-a.im);
+// fixed 3x3 complex A
+const A=[[C(2,1),C(0,-1),C(1,0)],[C(-1,2),C(3,0),C(0,1)],[C(1,-1),C(2,2),C(-1,0)]];
+const HT=(M)=>M[0].map((_,j)=>M.map(row=>conj(row[j])));      // Hermitian transpose
+const T =(M)=>M[0].map((_,j)=>M.map(row=>row[j]));            // plain transpose
+const matvec=(M,x)=>M.map(row=>row.reduce((s,mij,j)=>cadd(s,cmul(mij,x[j])),C(0,0)));
+const inner=(u,v)=>u.reduce((s,ui,i)=>cadd(s,cmul(conj(ui),v[i])),C(0,0)); // <u,v>=sum conj(u)_i v_i
+const rnd=()=>C(Math.round((Math.random()*4-2)*100)/100, Math.round((Math.random()*4-2)*100)/100);
+const near=(a,b)=>Math.hypot(a.re-b.re,a.im-b.im)<1e-9;
+const fmt=z=>`${z.re>=0?' ':''}${z.re.toFixed(3)}`;
+function runAdjoint(){
+  const x=[rnd(),rnd(),rnd()], y=[rnd(),rnd(),rnd()];
+  const lhs=inner(matvec(A,x),y);            // <Ax,y>
+  const rhsH=inner(x,matvec(HT(A),y));       // <x, A^H y>
+  const rhsT=inner(x,matvec(T(A),y));        // <x, A^T y>
+  const rows=[['⟨Ax, y⟩',lhs,null],['⟨x, Aᴴy⟩  (Hermitian)',rhsH,near(lhs,rhsH)],
+              ['⟨x, Aᵀy⟩  (transpose)',rhsT,near(lhs,rhsT)]];
+  document.getElementById('rows').innerHTML=rows.map(([n,z,m])=>
+    `<tr><td>${n}</td><td class="num">${fmt(z)}</td><td class="num">${fmt(C(0,z.im)).trim()==='0.000'?' 0.000':(z.im>=0?' ':'')+z.im.toFixed(3)}i</td>`+
+    `<td>${m===null?'&mdash;':(m?'<span class=ok>✓ yes</span>':'<span class=no>✗ no</span>')}</td></tr>`).join('');
+  document.getElementById('verdict').innerHTML=
+    '<span class=ok>Aᴴ matches</span> &nbsp;·&nbsp; <span class=no>Aᵀ does not</span> — that is why MRI uses the Hermitian adjoint.';
+}
+document.getElementById('reroll').onclick=runAdjoint; runAdjoint();
+
+// ---------- quiz ----------
+const QUIZ=[
+ {stem:'Why does the complex inner product conjugate the first argument, \\(\\langle u,v\\rangle=\\sum_i\\bar u_i v_i\\)?',
+  opts:['To make matrix multiplication faster','So that \\(\\langle u,u\\rangle=\\sum_i|u_i|^2\\) is real and \\(\\ge 0\\) — a valid length',
+        'Because MRI coils are complex','It is an arbitrary convention with no consequence'],
+  correct:1,
+  why:'Without the conjugate, \\(\\sum u_i^2\\) could be complex or negative, so it could not be a norm. The conjugate makes \\(\\langle u,u\\rangle=\\sum|u_i|^2\\) a genuine squared length.'},
+ {stem:'For a complex matrix \\(A\\), which identity holds?',
+  opts:['\\(\\langle Ax,y\\rangle=\\langle x,A^{T}y\\rangle\\)','\\(\\langle Ax,y\\rangle=\\langle x,A^{H}y\\rangle\\)',
+        '\\(\\langle Ax,y\\rangle=\\langle x,\\overline{A}y\\rangle\\)','\\(\\langle Ax,y\\rangle=\\langle x,Ay\\rangle\\)'],
+  correct:1,
+  why:'The adjoint identity uses the Hermitian transpose \\(A^{H}=\\overline{A}^{T}\\). Only \\(A^{H}\\) moves across the complex inner product cleanly — the live widget above shows \\(A^{T}\\) failing this.'},
+ {stem:'The paper writes the recon operator as \\(A^{*}:=A^{H}D\\). What does the adjoint dot-product test do on this \\(A^{*}\\)?',
+  opts:['Passes, because \\(A^{*}\\) is the true adjoint','Fails by design, because \\(D\\) makes it a preconditioned back-projection, not a true adjoint',
+        'Cannot be run on complex data','Passes only if \\(D=0\\)'],
+  correct:1,
+  why:'Folding density compensation \\(D\\) into \\(A^{*}\\) breaks the exact adjoint relationship on purpose (Audit A2). Keep a true \\(A^{H}\\) for testing, separate from the DC-step \\(A^{*}\\).'},
+];
+const quizEl=document.getElementById('quiz'),scoreEl=document.getElementById('score');
+let answered=0,correct=0;
+QUIZ.forEach((q,qi)=>{
+  const d=document.createElement('div');d.className='q';
+  d.innerHTML=`<div class="stem">${qi+1}. ${q.stem}</div>`;
+  q.opts.forEach((o,oi)=>{
+    const b=document.createElement('button');b.className='opt';b.innerHTML=String.fromCharCode(65+oi)+'. '+o;
+    b.onclick=()=>{
+      if(d.dataset.done)return;d.dataset.done=1;answered++;
+      d.querySelectorAll('.opt').forEach(x=>x.disabled=true);
+      d.querySelectorAll('.opt')[q.correct].classList.add('correct');
+      if(oi===q.correct)correct++;else b.classList.add('wrong');
+      const ex=document.createElement('div');ex.className='explain';
+      ex.innerHTML=(oi===q.correct?'✅ Correct. ':'❌ Not quite. ')+q.why;
+      d.appendChild(ex);scoreEl.textContent=`(${correct} / 3)`;
+      if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise([d]);
+    };
+    d.appendChild(b);
+  });
+  quizEl.appendChild(d);
+});
+
+// ---------- mastery checklist (localStorage) ----------
+const ITEMS=['I can compute a complex conjugate, modulus, and inner product',
+  'I can tell \\(A^{T}\\) from \\(A^{H}\\) and say when they differ',
+  'I can state and use \\(\\langle Ax,y\\rangle=\\langle x,A^{H}y\\rangle\\)',
+  'I derived \\(\\nabla f=A^{H}(Ax-y)\\) and know why it is \\(A^{H}\\), not \\(A^{T}\\)',
+  'I ran the adjoint test (widget or Python) and saw it pass',
+  'I understand why the paper’s \\(A^{*}=A^{H}D\\) fails the test by design (A2)'];
+const KEY='toner2025_day1_chk';
+let saved=JSON.parse(localStorage.getItem(KEY)||'[]');
+const mEl=document.getElementById('mastery');
+function draw(){
+  mEl.innerHTML='';
+  ITEMS.forEach((t,i)=>{
+    const li=document.createElement('li');
+    li.innerHTML=`<label style="cursor:pointer"><input type="checkbox" ${saved[i]?'checked':''} data-i="${i}"> ${t}</label>`;
+    mEl.appendChild(li);
+  });
+  mEl.querySelectorAll('input').forEach(c=>c.onchange=e=>{
+    saved[e.target.dataset.i]=e.target.checked;localStorage.setItem(KEY,JSON.stringify(saved));
+  });
+  if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise([mEl]);
+}
+draw();
+document.getElementById('resetChk').onclick=()=>{saved=[];localStorage.removeItem(KEY);draw();};
+</script>
+</body></html>
