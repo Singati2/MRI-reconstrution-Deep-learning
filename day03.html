@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 2 of 5 — Vectors, matrices, SVD &amp; the DFT</title>
+<title>Day 3 of 5 — The MRI signal, k-space &amp; the SEPG decay model</title>
 <script>
 window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},
   options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
@@ -12,10 +12,10 @@ window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$'
 <style>
 :root{--bg:#f9f9f7;--surface:#fcfcfb;--fg:#0b0b0b;--sec:#52514e;--muted:#898781;--border:#e1e0d9;
   --code-bg:#f0efec;--accent:#2a78d6;--good:#006300;--bad:#d03b3b;--card:#fff;--quote-bg:#f0efec;
-  --bar:#2a78d6;--track:#e1e0d9}
+  --spoke:#2a78d6;--c1:#2a78d6;--c2:#1baf7a;--c3:#eda100;--c4:#e34948}
 @media(prefers-color-scheme:dark){:root{--bg:#0d0d0d;--surface:#1a1a19;--fg:#fff;--sec:#c3c2b7;
   --muted:#898781;--border:#2c2c2a;--code-bg:#161b22;--accent:#3987e5;--good:#0ca30c;--bad:#e66767;
-  --card:#161b22;--quote-bg:#161b22;--bar:#3987e5;--track:#2c2c2a}}
+  --card:#161b22;--quote-bg:#161b22;--spoke:#3987e5;--c1:#3987e5;--c2:#199e70;--c3:#c98500;--c4:#e66767}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
 .wrap{max-width:900px;margin:0 auto;padding:28px 20px 96px}
@@ -36,10 +36,8 @@ pre code{background:none;padding:0}
 button{font:inherit;font-size:14px;cursor:pointer;border:1px solid var(--border);background:var(--surface);
   color:var(--fg);border-radius:8px;padding:7px 13px}
 button:hover{border-color:var(--accent)}
-table{border-collapse:collapse;width:100%;font-size:.92em;margin:10px 0}
-th,td{border:1px solid var(--border);padding:7px 10px;text-align:left}
-th{background:var(--code-bg)}
-td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:680px){.two{grid-template-columns:1fr}}
 .q{margin:14px 0;padding:16px 18px;border:1px solid var(--border);border-radius:12px;background:var(--card)}
 .q .stem{font-weight:600;margin-bottom:10px}
 .opt{display:block;width:100%;text-align:left;margin:7px 0;padding:10px 12px;border-radius:9px;
@@ -56,181 +54,211 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px;
   background:var(--accent);color:#fff}
 .time{color:var(--muted);font-size:13px;font-weight:600}
-.varbar{height:22px;background:var(--track);border-radius:6px;overflow:hidden;margin:8px 0}
-.varfill{height:100%;background:var(--bar);width:0;transition:width .18s;border-radius:6px}
 input[type=range]{width:100%}
-.big{font-size:1.9em;font-weight:800;font-variant-numeric:tabular-nums}
 svg{max-width:100%;height:auto;display:block}
+.big{font-size:1.5em;font-weight:800;font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;margin:6px 0}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.sw{width:13px;height:3px;border-radius:2px;display:inline-block}
 </style></head>
 <body><div class="wrap">
-<div class="nav">📚 <a href="index.html">Study index</a> · <a href="day01.html">← Day 1</a> ·
-<span class="pill">Day 2 of 5</span></div>
+<div class="nav">📚 <a href="index.html">Study index</a> · <a href="day02.html">← Day 2</a> ·
+<span class="pill">Day 3 of 5</span></div>
 
-<h1>Day 2 — Vectors, matrices, SVD &amp; the DFT</h1>
-<p><span class="tag">🧮 linear algebra</span><span class="tag">🟠 MRI</span><span class="tag">⚙️ coding</span>
-<span class="tag">✅ quiz</span> Two tools power the whole paper: the <strong>SVD</strong> (used twice — to
-compress 30+ coils to <strong>6 virtual coils</strong>, and to compress 32 echo times to
-<strong>4 principal components</strong>, Eq&nbsp;4) and the <strong>DFT</strong> (the Fourier encoding
-\(\mathcal{T}\) in Eqs&nbsp;1&ndash;3).</p>
+<h1>Day 3 — The MRI signal, k-space &amp; the SEPG decay model</h1>
+<p><span class="tag">🟠 MRI physics</span><span class="tag">🧮 Fourier</span><span class="tag">⚙️ coding</span>
+<span class="tag">✅ quiz</span> Where the numbers come from: how a spin-echo train produces a <em>time-series</em>
+of images at different echo times, why radial k-space + <strong>golden-angle</strong> sampling makes RADTSE
+motion-robust, and why the decay curves aren&rsquo;t simple exponentials (the <strong>SEPG</strong> model that
+built Day 2&rsquo;s dictionary).</p>
 
 <div class="card">
-<h3 style="margin-top:0">Day-2 at a glance</h3>
+<h3 style="margin-top:0">Day-3 at a glance</h3>
 <div class="grid">
-<div>Learning objectives</div><div>(1) Read a matrix as a linear operator. (2) Define eigenvalues vs. singular
-values. (3) Write the SVD \(A=U\Sigma V^{H}\) and the rank-\(k\) truncation. (4) Compute explained variance from
-singular values. (5) State DFT unitarity &amp; Parseval; know the centered-FFT convention.</div>
-<div>Required source</div><div>Toner 2025 §2.1 (Eqs 1&ndash;4) and §2.4 (6 virtual coils; P&nbsp;=&nbsp;4 PCs =
-99.96% variance).</div>
-<div>Math concepts</div><div>linear operators, eigen/singular values, SVD, low-rank truncation, unitary
-matrices, DFT, Parseval.</div>
-<div>MRI concepts</div><div>coil compression, temporal subspace, k-space ↔ image via the (nonuniform) Fourier
-transform.</div>
-<div>DL connection</div><div>the network runs inside a \(P\)-dim SVD subspace (Eq 4) — fewer channels, less
-memory, exploited temporal sparsity. This is the CS idea reused by DL.</div>
-<div>Mastery to advance</div><div>≥ 3/3 on the quiz, and you can explain from the widget why P&nbsp;=&nbsp;4 is
-&ldquo;enough.&rdquo;</div>
+<div>Learning objectives</div><div>(1) Describe T2 relaxation and the spin-echo train (ETL). (2) Explain
+k-space and the image↔k-space Fourier pair. (3) Contrast radial vs. Cartesian &amp; state why golden-angle
+helps. (4) Explain why undersampling causes streaks. (5) Say what SEPG adds beyond \(e^{-\text{TE}/T2}\).</div>
+<div>Required source</div><div>Toner 2025 §2.1 (Eqs 1&ndash;3; RADTSE, pseudo-golden-angle, ETL=32) and the
+SEPG dictionary (ref 24; refs 18,19 for dictionary matching).</div>
+<div>Math concepts</div><div>exponential decay, Fourier transform, sampling, aliasing/streaking, template
+(dictionary) matching.</div>
+<div>MRI concepts</div><div>T2, spin/stimulated echoes, turbo spin-echo, k-space, radial trajectory,
+respiratory triggering.</div>
+<div>DL connection</div><div>the network&rsquo;s job is to undo the streaks from few-spoke radial sampling
+(Eq 3) while staying consistent with acquired k-space (Eq 9).</div>
+<div>Mastery to advance</div><div>≥ 3/3 quiz; from the spoke widget you can explain the &ldquo;5 views/TE&rdquo;
+regime; you can state one way SEPG curves differ from mono-exponential.</div>
 </div></div>
 
 <h2>1 · Concept review <span class="time">~15 min</span></h2>
-<p>A matrix \(A\in\mathbb{C}^{m\times n}\) <em>is</em> a linear operator: \(x\mapsto Ax\). Two factorizations
-tell you what it does. <strong>Eigenvalues</strong> (\(Av=\lambda v\)) exist for square matrices and describe
-directions the operator merely scales. <strong>Singular values</strong> exist for <em>any</em> matrix and
-describe how much the operator stretches orthonormal input directions into orthonormal output directions.</p>
+<p>After excitation, transverse magnetization decays with time constant <strong>T2</strong>:
+\(S(t)\approx S_0\,e^{-t/T2}\). A <strong>turbo spin-echo</strong> sequence applies a train of refocusing
+pulses, generating an <em>echo train</em> of <strong>ETL = 32</strong> echoes at echo times
+\(\text{TE}_1,\dots,\text{TE}_{32}\) (spacing ≈ 8.1&nbsp;ms). Each echo is a different T2-weighting of the same
+anatomy — so one shot yields a co-registered <em>time-series</em> of images, and a voxel&rsquo;s brightness vs.
+TE traces its decay curve. Fitting that curve gives the T2 map.</p>
 
 <h2>2 · Main lesson <span class="time">~30 min</span></h2>
-<h3>The SVD and low-rank truncation</h3>
-<p>Every \(A\in\mathbb{C}^{m\times n}\) factors as</p>
-<p style="text-align:center">\( A = U\Sigma V^{H} = \sum_{k=1}^{r}\sigma_k\,u_k v_k^{H},\qquad
-\sigma_1\ge\sigma_2\ge\dots\ge\sigma_r>0. \)</p>
-<p>The <strong>rank-\(P\) truncation</strong> \(A_P=\sum_{k=1}^{P}\sigma_k u_k v_k^{H}\) is the best rank-\(P\)
-approximation in the \(\ell_2\)/Frobenius sense (Eckart&ndash;Young). The <strong>explained variance</strong> of
-keeping \(P\) components is</p>
-<p style="text-align:center">\( \text{explained}(P)=\dfrac{\sum_{k=1}^{P}\sigma_k^{2}}{\sum_{k=1}^{r}\sigma_k^{2}}. \)</p>
-<div class="card"><span class="tag">🟠 MRI</span> The paper builds a dictionary of T2 signal-decay curves (SEPG
-model, Day&nbsp;3), SVDs it, and keeps \(P=4\) principal components that hold <strong>99.96%</strong> of the
-variance. Those 4 &ldquo;temporal basis images&rdquo; replace the 32 echo-time images as the network&rsquo;s
-channels (Eq&nbsp;4) — this is the temporal-sparsity idea from compressed sensing, reused by deep learning.</div>
+<h3>k-space and radial sampling</h3>
+<p>The scanner does not measure the image directly — it measures its <strong>Fourier transform</strong>,
+called <strong>k-space</strong>. Image and k-space are related by \(y=\mathcal{T}x\) (Eq 1): each acquired
+sample is one point of \(\hat x\). <strong>Cartesian</strong> sequences fill k-space row by row;
+<strong>radial</strong> sequences acquire <em>spokes</em> through the centre. Radial oversamples the centre
+(robust to motion, self-navigating) and degrades <em>gracefully</em> under undersampling — missing data shows
+up as diffuse <strong>streaks</strong> rather than coherent fold-over aliasing.</p>
+<p>RADTSE distributes spokes with a <strong>pseudo-golden-angle</strong> increment (~111.25° between successive
+spokes) so that any subset of spokes still covers k-space fairly evenly — crucial because each echo time keeps
+only a <em>few</em> spokes.</p>
 
-<h3>The Discrete Fourier Transform</h3>
-<p>The DFT matrix \(F\) with \(F_{kn}=\tfrac{1}{\sqrt{N}}e^{-2\pi i kn/N}\) is <strong>unitary</strong>
-(\(F^{H}F=I\)), so by <strong>Parseval</strong> it preserves energy: \(\|Fx\|_2=\|x\|_2\). In MRI, \(F\) maps
-image ↔ k-space. The radial acquisition uses a <em>nonuniform</em> FFT \(\mathcal{T}\) (samples off the Cartesian
-grid), but the unitary intuition still guides the adjoint \(\mathcal{T}^{H}\) you built on Day&nbsp;1.</p>
-<div class="card"><span class="tag">⚙️ convention</span> &ldquo;Centered&rdquo; FFT =
-<code>fftshift(fft(ifftshift(x)))</code> with <code>norm="ortho"</code>. <code>ifftshift</code> before,
-<code>fftshift</code> after puts DC at the image centre and makes the transform unitary — the convention used in
-<code>code/mri_operators.py</code>.</div>
-
-<h2>3 · Coding activity — SVD energy &amp; the temporal subspace <span class="time">~25 min</span></h2>
-<p>Below is the <strong>real SVD spectrum</strong> of a synthetic 24-curve T2-decay dictionary (echo spacing
-8.1&nbsp;ms, 32 echoes, T2 from 20&ndash;160&nbsp;ms), computed with NumPy. Drag the slider to choose how many
-principal components \(P\) to keep and watch the explained variance. This is exactly the compression in Eq&nbsp;4.</p>
-
+<div class="two">
 <div class="card">
-<div id="svchart"></div>
-<label style="display:block;margin:14px 0 4px">Keep <b id="pval">1</b> of 24 components (\(P\)):</label>
-<input type="range" id="pslider" min="1" max="12" value="1">
-<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:10px">
-  <span class="big" id="varpct">96.6403%</span>
-  <span style="color:var(--sec)">of variance captured &nbsp;·&nbsp; discarding <b id="ndrop">23</b> components</span>
+<b>Radial golden-angle sampling</b>
+<div id="spokes"></div>
+<label style="display:block;margin:10px 0 3px">Spokes (views): <b id="nspoke">5</b></label>
+<input type="range" id="spokeSlider" min="1" max="60" value="5">
+<p id="spokeMsg" style="font-size:13px;color:var(--sec);margin:6px 0 0"></p>
 </div>
-<div class="varbar"><div class="varfill" id="varfill"></div></div>
-<p id="svmsg" style="font-size:14px;color:var(--sec);margin:6px 0 0"></p>
+<div class="card">
+<b>T2-decay curves &amp; the dictionary</b>
+<div id="decay"></div>
+<div class="legend" id="decayLegend"></div>
+<label style="display:block;margin:6px 0 3px">Your voxel&rsquo;s T2: <b id="t2val">40</b> ms</label>
+<input type="range" id="t2Slider" min="15" max="200" value="40">
+<p id="t2Msg" style="font-size:13px;color:var(--sec);margin:6px 0 0"></p>
 </div>
-<p style="font-size:13px;color:var(--sec)">This synthetic, noiseless dictionary is even more compressible than
-the paper&rsquo;s (P=3 already ≈ 99.99%); Toner&nbsp;2025 reports <strong>99.96% at P=4</strong> on their real
-SEPG dictionary. The lesson is the same: signal-decay curves live in a tiny subspace.</p>
+</div>
 
-<pre><code># NumPy equivalent (what produced the numbers above)
-U, S, Vt = np.linalg.svd(X, full_matrices=False)   # X: 24 curves x 32 echoes
-explained = np.cumsum(S**2) / (S**2).sum()          # cumulative variance
-P = np.searchsorted(explained, 0.9996) + 1          # smallest P for 99.96%</code></pre>
+<h3>The SEPG signal model — why not just \(e^{-\text{TE}/T2}\)?</h3>
+<p>In a real spin-echo train the refocusing pulses are imperfect (slice profile, \(B_1\) inhomogeneity), so
+besides the primary spin echoes there are <strong>stimulated and indirect echoes</strong>. These make the
+measured decay deviate from a clean mono-exponential — early echoes especially. The
+<strong>SEPG</strong> (slice-resolved extended phase graph) model simulates this echo mixing and produces a
+<strong>dictionary</strong> of realistic decay curves indexed by T2 (Lebel 2010, ref 24; used for matching in
+refs 18,19). Voxel-wise T2 is then found by matching the measured curve to the closest dictionary entry:</p>
+<p style="text-align:center">\( \hat{T2}(v)=\arg\min_{T2}\ \big\| s_v - d_{T2}\big\|_2, \)</p>
+<p>where \(s_v\) is the voxel&rsquo;s measured signal across the 32 echoes and \(d_{T2}\) is the SEPG dictionary
+curve for candidate \(T2\). <strong>This is the dictionary whose SVD gave Day 2&rsquo;s 4-PC subspace</strong>
+(Eq 4): the curves are so correlated that 4 principal components capture 99.96% of them.</p>
+<div class="card"><span class="tag">🔴 Common mistake</span> Assuming the echo-train signal is a pure
+exponential. It is close, but using \(e^{-\text{TE}/T2}\) instead of an SEPG dictionary biases T2 (worst for the
+early echoes and imperfect refocusing). The widgets above use mono-exponential curves <em>for illustration</em>;
+the paper&rsquo;s real pipeline uses SEPG-simulated curves.</div>
+
+<h2>3 · Coding activity <span class="time">~25 min</span></h2>
+<p>Play with both widgets, then reproduce the idea in NumPy: build a mono-exponential dictionary, add noise to
+one curve, and recover T2 by nearest-neighbour matching (a stand-in for SEPG matching).</p>
+<pre><code>te = np.arange(1, 33) * 8.1                  # 32 echo times (ms)
+T2_grid = np.arange(10, 201, 1.0)            # candidate T2 values
+D = np.exp(-te[None,:] / T2_grid[:,None])    # dictionary (mono-exp stand-in for SEPG)
+D /= np.linalg.norm(D, axis=1, keepdims=True)
+
+s = np.exp(-te / 63.0); s += 0.02*np.random.randn(32)   # noisy voxel, true T2=63
+s /= np.linalg.norm(s)
+T2_hat = T2_grid[np.argmax(D @ s)]           # match = max correlation
+print(T2_hat)                                # ~63 ms</code></pre>
 
 <h2>4 · Quiz <span class="score" id="score">(0 / 3)</span></h2>
 <div id="quiz"></div>
 
 <h2>5 · Reflection &amp; expected output</h2>
-<div class="card"><span class="tag">✍️ reflection</span> The paper compresses coils (30+ → 6) <em>and</em>
-echo times (32 → 4) with the same tool. In 2&ndash;3 sentences, explain what &ldquo;redundancy&rdquo; the SVD is
-exploiting in each case, and why compressing helps an 11&nbsp;GB GPU.</div>
-<p><strong>Expected output of Day 2:</strong> (a) the reflection note in <code>notes/</code>; (b) you can state
-the SVD and the explained-variance formula from memory; (c) using the widget, you can justify P&nbsp;=&nbsp;4;
+<div class="card"><span class="tag">✍️ reflection</span> RADTSE gives you a whole <em>time-series</em> per shot,
+but each echo keeps only ~5 spokes. In 2&ndash;3 sentences, connect the spoke widget (why 5 spokes streaks) to
+the SVD widget from Day 2 (why the network can still recover clean images): what prior makes the under-determined
+problem solvable?</div>
+<p><strong>Expected output of Day 3:</strong> (a) the reflection note in <code>notes/</code>; (b) the NumPy
+dictionary-matching snippet recovering ~63 ms; (c) you can explain golden-angle coverage and one SEPG effect;
 (d) 3/3 on the quiz.</p>
 
 <h2>6 · Mastery checklist</h2>
 <ul class="chk" id="mastery"></ul>
 <button id="resetChk" style="margin-top:8px">Reset checklist</button>
 
-<div class="foot">Day 2 of 5 · grounded in Toner 2025 §2.1 (Eq 4) &amp; §2.4 · SVD values computed from a
-synthetic SEPG-style dictionary · next: <em>Day 3 — the MRI signal, k-space, and the SEPG decay model.</em></div>
+<div class="foot">Day 3 of 5 · grounded in Toner 2025 §2.1 (Eqs 1&ndash;3) &amp; the SEPG dictionary (ref 24) ·
+widgets use mono-exponential curves for illustration · next: <em>Day 4 — the forward model &amp; coil sensitivities.</em></div>
 
 <script>
-// ---- real, precomputed SVD spectrum of the synthetic T2 dictionary ----
-const S   = [10.76896,1.95673,0.44185,0.08695,0.01378,0.00171,0.00016,0.00001,0.00000,0.00000,0.00000,0.00000];
-const CUM = [96.6403,99.8308,99.9935,99.9998,100.0000,100.0000,100.0000,100.0000,100.0000,100.0000,100.0000,100.0000];
-const NTOTAL=24;
+const ETL=32, ESP=8.1;                       // echoes and spacing (ms), like the paper
+const cs=getComputedStyle(document.documentElement);
+const col=k=>cs.getPropertyValue(k).trim();
 
-// ---- singular-value bar chart (log scale, since values span 6 orders of magnitude) ----
+// ---------- radial golden-angle spoke widget ----------
 (function(){
-  const cs=getComputedStyle(document.documentElement);
-  const bar=cs.getPropertyValue('--bar').trim(), muted=cs.getPropertyValue('--muted').trim(),
-        sec=cs.getPropertyValue('--sec').trim(), grid=cs.getPropertyValue('--border').trim();
-  const n=8, W=680,H=240,M={t:16,r:16,b:40,l:44};
-  const logv=v=>Math.log10(Math.max(v,1e-5));
-  const lo=-5, hi=Math.ceil(logv(S[0]));
-  const bw=(W-M.l-M.r)/n*0.62, gap=(W-M.l-M.r)/n;
-  const y=v=>M.t+(1-(logv(v)-lo)/(hi-lo))*(H-M.t-M.b);
-  let bars='';
-  for(let i=0;i<n;i++){
-    const x=M.l+i*gap+ (gap-bw)/2, yt=y(S[i]), yb=H-M.b;
-    bars+=`<rect id="sv${i}" x="${x.toFixed(1)}" y="${yt.toFixed(1)}" width="${bw.toFixed(1)}"
-      height="${(yb-yt).toFixed(1)}" rx="3" fill="${bar}" opacity="1"/>`;
-    bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${yb+16}" text-anchor="middle" font-size="11"
-      fill="${muted}">σ${i+1}</text>`;
+  const S=260, c=S/2, R=S/2-12, GA=111.25;   // pseudo-golden angle (deg)
+  const svgEl=document.getElementById('spokes'), slider=document.getElementById('spokeSlider');
+  function draw(){
+    const n=+slider.value;
+    let lines='';
+    for(let k=0;k<n;k++){
+      const a=(k*GA)%180 * Math.PI/180;
+      const dx=R*Math.cos(a), dy=R*Math.sin(a);
+      lines+=`<line x1="${(c-dx).toFixed(1)}" y1="${(c-dy).toFixed(1)}" x2="${(c+dx).toFixed(1)}"
+        y2="${(c+dy).toFixed(1)}" stroke="${col('--spoke')}" stroke-width="1.4" opacity="0.85"/>`;
+    }
+    svgEl.innerHTML=`<svg viewBox="0 0 ${S} ${S}" role="img" aria-label="${n} radial spokes at the golden angle">
+      <circle cx="${c}" cy="${c}" r="${R}" fill="none" stroke="${col('--border')}"/>
+      <circle cx="${c}" cy="${c}" r="2.5" fill="${col('--muted')}"/>${lines}</svg>`;
+    document.getElementById('nspoke').textContent=n;
+    let m;
+    if(n<=5) m='≈ 5 views/TE — the paper’s 160-view regime. Large angular gaps ⇒ heavy streaks; the network must fill them in.';
+    else if(n<=12) m='Sparse coverage — still gappy. Around here is one echo-train’s worth of spokes.';
+    else if(n<=34) m='Fairly even coverage thanks to the golden angle — few coherent gaps.';
+    else m='Dense, near-full coverage (little streaking) — but slow to acquire.';
+    document.getElementById('spokeMsg').textContent=m;
   }
-  let ax='';
-  for(let g=lo; g<=hi; g++){const yy=y(Math.pow(10,g));
-    ax+=`<line x1="${M.l}" y1="${yy}" x2="${W-M.r}" y2="${yy}" stroke="${grid}"/>`+
-        `<text x="${M.l-6}" y="${yy+4}" text-anchor="end" font-size="10" fill="${muted}">10^${g}</text>`;}
-  document.getElementById('svchart').innerHTML=
-    `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Singular values on a log scale, decaying rapidly">
-      ${ax}${bars}
-      <text x="12" y="${(M.t+H-M.b)/2}" transform="rotate(-90 12 ${(M.t+H-M.b)/2})" text-anchor="middle"
-        font-size="11" fill="${sec}">singular value σ (log)</text></svg>`;
+  slider.oninput=draw; draw();
 })();
 
-// ---- slider: explained variance + highlight kept bars ----
-const slider=document.getElementById('pslider');
-function updateP(){
-  const P=+slider.value;
-  document.getElementById('pval').textContent=P;
-  document.getElementById('varpct').textContent=CUM[P-1].toFixed(4)+'%';
-  document.getElementById('ndrop').textContent=NTOTAL-P;
-  document.getElementById('varfill').style.width=Math.min(100,CUM[P-1])+'%';
-  for(let i=0;i<8;i++){const el=document.getElementById('sv'+i); if(el)el.style.opacity=(i<P?1:0.25);}
-  const msg=P>=4?'✅ P = '+P+' already captures essentially all signal variance — this is why the paper uses only 4 PC channels.':
-    (P===3?'Almost there — 3 components capture 99.99%.':'Keep dragging: a handful of components capture nearly everything.');
-  document.getElementById('svmsg').textContent=msg;
-}
-slider.oninput=updateP; updateP();
+// ---------- T2-decay curve widget ----------
+(function(){
+  const W=300,H=210,M={t:12,r:12,b:30,l:34};
+  const te=Array.from({length:ETL},(_,i)=>(i+1)*ESP);
+  const refs=[{T2:40,c:'--c1',n:'liver ~40'},{T2:60,c:'--c2',n:'spleen ~60'},
+              {T2:90,c:'--c3',n:'kidney ~90'},{T2:150,c:'--c4',n:'fluid ~150'}];
+  const svgEl=document.getElementById('decay'), slider=document.getElementById('t2Slider');
+  const x=i=>M.l+(i/(ETL-1))*(W-M.l-M.r);
+  const y=v=>M.t+(1-v)*(H-M.t-M.b);          // signal 0..1
+  const curve=T2=>te.map((t,i)=>`${i?'L':'M'}${x(i).toFixed(1)} ${y(Math.exp(-t/T2)).toFixed(1)}`).join(' ');
+  document.getElementById('decayLegend').innerHTML=
+    refs.map(r=>`<span><span class="sw" style="background:${col(r.c)}"></span>${r.n}</span>`).join('')+
+    `<span><span class="sw" style="background:${col('--fg')}"></span><b>your voxel</b></span>`;
+  function draw(){
+    const T2=+slider.value;
+    let grid='';
+    for(let g=0;g<=1;g+=0.25){const yy=y(g);
+      grid+=`<line x1="${M.l}" y1="${yy}" x2="${W-M.r}" y2="${yy}" stroke="${col('--border')}"/>`;}
+    const refPaths=refs.map(r=>`<path d="${curve(r.T2)}" fill="none" stroke="${col(r.c)}" stroke-width="1.6" opacity="0.65"/>`).join('');
+    svgEl.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="T2 decay curves; your voxel T2 ${T2} ms">
+      ${grid}${refPaths}
+      <path d="${curve(T2)}" fill="none" stroke="${col('--fg')}" stroke-width="2.6"/>
+      <text x="${M.l}" y="${H-8}" font-size="10" fill="${col('--muted')}">TE₁</text>
+      <text x="${W-M.r}" y="${H-8}" text-anchor="end" font-size="10" fill="${col('--muted')}">TE₃₂ (${(ETL*ESP).toFixed(0)} ms)</text>
+      <text x="6" y="${y(1)}" font-size="10" fill="${col('--muted')}">1</text>
+      <text x="6" y="${y(0)+3}" font-size="10" fill="${col('--muted')}">0</text></svg>`;
+    document.getElementById('t2val').textContent=T2;
+    const near=refs.reduce((a,b)=>Math.abs(b.T2-T2)<Math.abs(a.T2-T2)?b:a);
+    document.getElementById('t2Msg').textContent=
+      `Higher T2 ⇒ slower decay ⇒ brighter at late echoes. Closest reference tissue: ${near.n.split(' ')[0]}. Dictionary matching reads off T2 from this curve’s shape.`;
+  }
+  slider.oninput=draw; draw();
+})();
 
-// ---- quiz ----
+// ---------- quiz ----------
 const QUIZ=[
- {stem:'What do the singular values \\(\\sigma_k\\) of a matrix tell you?',
-  opts:['The eigenvectors of \\(A\\)','How much \\(A\\) stretches orthonormal input directions (any shape of \\(A\\))',
-        'Only defined for symmetric matrices','The determinant of \\(A\\)'],
+ {stem:'Why does RADTSE use a pseudo-golden-angle (~111.25°) increment between spokes?',
+  opts:['To make the math simpler','So that any subset of spokes still covers k-space fairly evenly — vital because each TE keeps only a few spokes',
+        'To increase the T2 of tissue','Because Cartesian sampling requires it'],
   correct:1,
-  why:'Singular values exist for any \\(m\\times n\\) matrix and give the stretch factors along the right singular vectors. Eigenvalues need a square matrix; singular values do not.'},
- {stem:'Keeping \\(P\\) components captures \\(\\sum_{k\\le P}\\sigma_k^2/\\sum_k\\sigma_k^2\\). Why does P=4 suffice for the T2 dictionary?',
-  opts:['Because there are only 4 echo times','Because the singular values decay extremely fast, so 4 terms already hold ~99.96% of the energy',
-        'Because the network has 4 layers','Because the DFT has 4 frequencies'],
+  why:'The golden angle spreads successive spokes to avoid clustering, so even ~5 spokes per echo time give reasonably uniform k-space coverage. That is what makes the RADTSE time-series reconstructable.'},
+ {stem:'What does undersampled radial k-space look like in the image, and why is that good for CS/DL?',
+  opts:['Coherent fold-over (wrap-around) aliasing','Diffuse, noise-like streaks — incoherent artifacts that a sparsity/denoising prior can remove',
+        'A perfectly sharp image','A uniform gray image'],
   correct:1,
-  why:'The decay curves are highly correlated, so the SVD spectrum collapses after a few terms (see the log-scale chart). 4 PCs ≈ 99.96% variance — the temporal subspace of Eq 4.'},
- {stem:'Why is the centered DFT matrix \\(F\\) called unitary, and what does that give you?',
-  opts:['\\(F=F^{T}\\); it makes \\(F\\) symmetric','\\(F^{H}F=I\\); by Parseval it preserves energy, \\(\\|Fx\\|_2=\\|x\\|_2\\)',
-        '\\(F\\) has determinant 0','It has only real entries'],
+  why:'Radial undersampling produces incoherent streaks (not structured Cartesian aliasing). Incoherence is exactly the condition compressed sensing needs, and it is what the CNN+DC cascade is trained to clean up.'},
+ {stem:'What does the SEPG model add beyond \\(S(t)=e^{-t/T2}\\)?',
+  opts:['Nothing; it is identical','It accounts for stimulated/indirect echoes from imperfect refocusing, giving realistic decay curves for accurate T2 fitting',
+        'It removes the need for k-space','It makes acquisition faster'],
   correct:1,
-  why:'Unitarity \\(F^{H}F=I\\) ⇒ Parseval: the transform preserves \\(\\ell_2\\) norm. That is why FFT↔iFFT round-trips exactly (your Day-1/Parseval test) and why the adjoint is the inverse for the full Cartesian case.'},
+  why:'Imperfect refocusing (slice profile, B1) creates stimulated/indirect echoes so the real decay departs from a clean exponential. SEPG simulates this, and matching to the SEPG dictionary removes the resulting T2 bias.'},
 ];
 const quizEl=document.getElementById('quiz'),scoreEl=document.getElementById('score');
 let answered=0,correct=0;
@@ -254,14 +282,14 @@ QUIZ.forEach((q,qi)=>{
   quizEl.appendChild(d);
 });
 
-// ---- mastery checklist ----
-const ITEMS=['I can read a matrix as a linear operator \\(x\\mapsto Ax\\)',
-  'I can state the difference between eigenvalues and singular values',
-  'I can write the SVD \\(A=U\\Sigma V^{H}\\) and the rank-P truncation',
-  'I can compute explained variance from singular values',
-  'I can explain why P=4 PCs suffice for the T2 dictionary',
-  'I can state DFT unitarity and Parseval, and the centered-FFT convention'];
-const KEY='toner2025_day2_chk';
+// ---------- mastery checklist ----------
+const ITEMS=['I can describe T2 relaxation and the ETL=32 spin-echo train',
+  'I can explain k-space and the image↔k-space Fourier pair',
+  'I can say why golden-angle radial sampling helps undersampled recon',
+  'I can explain why radial undersampling gives streaks (not fold-over)',
+  'I can state what SEPG adds beyond a mono-exponential',
+  'I can connect the SEPG dictionary to Day 2’s 4-PC subspace'];
+const KEY='toner2025_day3_chk';
 let saved=JSON.parse(localStorage.getItem(KEY)||'[]');
 const mEl=document.getElementById('mastery');
 function draw(){

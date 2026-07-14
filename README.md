@@ -18,7 +18,7 @@ Source PDF: `~/Desktop/Magnetic Resonance in Med - 2025 - Toner - Accelerated ..
 | `tests/test_operators.py` | ✅ **runs** | Unit tests for §15 items 1–4, 7, 8. |
 | `11_RESEARCH_ROADMAP.md` | ✅ **complete** | Source-grounded PhD directions (A/B/C tiers). |
 | `03,04,06,07` (concepts, forward model, optimization, CS→DL) | 🟡 **scaffolded** | Core content is in 01/02/05; these expand it. Build next sessions. |
-| `08_DAILY_12_WEEK_PLAN.md` | 🟡 **outline in this README §Plan** | Full daily plan to be expanded interactively. |
+| **1-Week Plan** (`day01.html` … `day05.html`) | ✅ **complete, interactive, offline** | 5-day arc: adjoints → SVD/DFT → signal/k-space/SEPG → forward model → regularized inverse. Each has a widget, quiz, mastery checklist; each a distinct colour. Linked from `index.html`. |
 | `09_INTERACTIVE_QUIZZES.md`, `15_PROGRESS_TRACKER.md` | 🟡 **live in chat** | Lesson 1 started in-session; tracker seeded below. |
 | `10_CODING_LABS.md`, `12_GLOSSARY.md`, `14_OPEN_QUESTIONS.md` | 🟡 **partially in 02/05/13** | Consolidate next. |
 

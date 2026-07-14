@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Day 2 of 5 — Vectors, matrices, SVD &amp; the DFT</title>
+<title>Day 5 — Zero-filled recon, aliasing &amp; the regularized inverse problem</title>
 <script>
 window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$','$$']]},
   options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
@@ -11,18 +11,18 @@ window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]'],['$$'
 </script>
 <style>
 :root{--bg:#f9f9f7;--surface:#fcfcfb;--fg:#0b0b0b;--sec:#52514e;--muted:#898781;--border:#e1e0d9;
-  --code-bg:#f0efec;--accent:#2a78d6;--good:#006300;--bad:#d03b3b;--card:#fff;--quote-bg:#f0efec;
-  --bar:#2a78d6;--track:#e1e0d9}
+  --code-bg:#f0efec;--accent:#5546c6;--good:#006300;--bad:#d03b3b;--card:#fff;--quote-bg:#f1eefb;
+  --flow:#6a5ae0;--flowink:#eae6fb;--under:#e34948;--over:#eda100}
 @media(prefers-color-scheme:dark){:root{--bg:#0d0d0d;--surface:#1a1a19;--fg:#fff;--sec:#c3c2b7;
-  --muted:#898781;--border:#2c2c2a;--code-bg:#161b22;--accent:#3987e5;--good:#0ca30c;--bad:#e66767;
-  --card:#161b22;--quote-bg:#161b22;--bar:#3987e5;--track:#2c2c2a}}
+  --muted:#898781;--border:#2c2c2a;--code-bg:#161b22;--accent:#9085e9;--good:#0ca30c;--bad:#e66767;
+  --card:#161b22;--quote-bg:#171528;--flow:#9085e9;--flowink:#171528;--under:#e66767;--over:#c98500}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
 .wrap{max-width:900px;margin:0 auto;padding:28px 20px 96px}
 .nav{font-size:14px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
 .nav a{color:var(--accent);text-decoration:none}
 h1{font-size:1.8em;line-height:1.22}
-h2{font-size:1.35em;margin-top:1.8em;border-bottom:1px solid var(--border);padding-bottom:.25em}
+h2{font-size:1.35em;margin-top:1.8em;border-bottom:2px solid var(--accent);padding-bottom:.25em}
 h3{margin-top:1.3em;font-size:1.1em}
 code{background:var(--code-bg);padding:.12em .38em;border-radius:5px;font-size:.88em;
   font-family:ui-monospace,Menlo,Consolas,monospace}
@@ -30,16 +30,12 @@ pre{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;p
 pre code{background:none;padding:0}
 .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin:16px 0}
 .tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:20px;
-  background:var(--code-bg);color:var(--sec);margin-right:6px}
+  background:var(--quote-bg);color:var(--accent);margin-right:6px}
 .grid{display:grid;grid-template-columns:150px 1fr;gap:6px 14px;font-size:.95em;margin:8px 0}
 .grid div:nth-child(odd){color:var(--sec);font-weight:600}
 button{font:inherit;font-size:14px;cursor:pointer;border:1px solid var(--border);background:var(--surface);
   color:var(--fg);border-radius:8px;padding:7px 13px}
 button:hover{border-color:var(--accent)}
-table{border-collapse:collapse;width:100%;font-size:.92em;margin:10px 0}
-th,td{border:1px solid var(--border);padding:7px 10px;text-align:left}
-th{background:var(--code-bg)}
-td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .q{margin:14px 0;padding:16px 18px;border:1px solid var(--border);border-radius:12px;background:var(--card)}
 .q .stem{font-weight:600;margin-bottom:10px}
 .opt{display:block;width:100%;text-align:left;margin:7px 0;padding:10px 12px;border-radius:9px;
@@ -56,181 +52,197 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 .pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px;
   background:var(--accent);color:#fff}
 .time{color:var(--muted);font-size:13px;font-weight:600}
-.varbar{height:22px;background:var(--track);border-radius:6px;overflow:hidden;margin:8px 0}
-.varfill{height:100%;background:var(--bar);width:0;transition:width .18s;border-radius:6px}
-input[type=range]{width:100%}
-.big{font-size:1.9em;font-weight:800;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent)}
 svg{max-width:100%;height:auto;display:block}
+.big{font-size:1.4em;font-weight:800}
+.done{background:linear-gradient(90deg,var(--quote-bg),transparent);border:1px solid var(--accent);
+  border-radius:12px;padding:14px 18px;margin:16px 0}
 </style></head>
 <body><div class="wrap">
-<div class="nav">📚 <a href="index.html">Study index</a> · <a href="day01.html">← Day 1</a> ·
-<span class="pill">Day 2 of 5</span></div>
+<div class="nav">📚 <a href="index.html">Study index</a> · <a href="day04.html">← Day 4</a> ·
+<span class="pill">Day 5 of 5 · capstone</span></div>
 
-<h1>Day 2 — Vectors, matrices, SVD &amp; the DFT</h1>
-<p><span class="tag">🧮 linear algebra</span><span class="tag">🟠 MRI</span><span class="tag">⚙️ coding</span>
-<span class="tag">✅ quiz</span> Two tools power the whole paper: the <strong>SVD</strong> (used twice — to
-compress 30+ coils to <strong>6 virtual coils</strong>, and to compress 32 echo times to
-<strong>4 principal components</strong>, Eq&nbsp;4) and the <strong>DFT</strong> (the Fourier encoding
-\(\mathcal{T}\) in Eqs&nbsp;1&ndash;3).</p>
+<h1>Day 5 — Zero-filled recon, aliasing &amp; the regularized inverse problem</h1>
+<p><span class="tag">🟣 violet track</span><span class="tag">🧮 inverse problems</span><span class="tag">📊 flow</span>
+<span class="tag">✅ quiz</span> The week&rsquo;s payoff: why undoing \(A\) is <em>ill-posed</em>, why the naive
+zero-filled recon \(A^{H}y\) aliases, and how a regularizer \(\lambda R(x)\) rescues it — landing exactly on the
+paper&rsquo;s learned unrolled step (Eq&nbsp;9).</p>
 
 <div class="card">
-<h3 style="margin-top:0">Day-2 at a glance</h3>
+<h3 style="margin-top:0">Day-5 at a glance</h3>
 <div class="grid">
-<div>Learning objectives</div><div>(1) Read a matrix as a linear operator. (2) Define eigenvalues vs. singular
-values. (3) Write the SVD \(A=U\Sigma V^{H}\) and the rank-\(k\) truncation. (4) Compute explained variance from
-singular values. (5) State DFT unitarity &amp; Parseval; know the centered-FFT convention.</div>
-<div>Required source</div><div>Toner 2025 §2.1 (Eqs 1&ndash;4) and §2.4 (6 virtual coils; P&nbsp;=&nbsp;4 PCs =
-99.96% variance).</div>
-<div>Math concepts</div><div>linear operators, eigen/singular values, SVD, low-rank truncation, unitary
-matrices, DFT, Parseval.</div>
-<div>MRI concepts</div><div>coil compression, temporal subspace, k-space ↔ image via the (nonuniform) Fourier
-transform.</div>
-<div>DL connection</div><div>the network runs inside a \(P\)-dim SVD subspace (Eq 4) — fewer channels, less
-memory, exploited temporal sparsity. This is the CS idea reused by DL.</div>
-<div>Mastery to advance</div><div>≥ 3/3 on the quiz, and you can explain from the widget why P&nbsp;=&nbsp;4 is
-&ldquo;enough.&rdquo;</div>
+<div>Learning objectives</div><div>(1) Explain why \(A^{H}y\) (zero-filled) is not the inverse. (2) Write the
+regularized problem \(\min_x \tfrac12\|Ax-y\|_2^2+\lambda R(x)\). (3) Give the Tikhonov normal equations. (4)
+Explain the \(\lambda\) bias–variance trade-off &amp; the MAP view. (5) Connect the iterative solution to the
+paper&rsquo;s unrolled network.</div>
+<div>Required source</div><div>Toner 2025 §2.1 (Eqs 2–3, 5–6) &amp; §2.2 (Eqs 7–9, the DC step).</div>
+<div>Math concepts</div><div>ill-posedness, least squares, Tikhonov regularization, MAP estimation,
+bias–variance, proximal iteration.</div>
+<div>MRI concepts</div><div>aliasing/streaks, priors (sparsity, low-rank, TV, learned), data consistency.</div>
+<div>DL connection</div><div>the CNN in Eq 9 <em>is</em> the regularizer&rsquo;s proximal step — this is where
+the whole week meets the paper.</div>
+<div>Mastery to advance</div><div>≥ 3/3 quiz; from the \(\lambda\) widget you can name the under- and
+over-regularized regimes and the sweet spot.</div>
 </div></div>
 
-<h2>1 · Concept review <span class="time">~15 min</span></h2>
-<p>A matrix \(A\in\mathbb{C}^{m\times n}\) <em>is</em> a linear operator: \(x\mapsto Ax\). Two factorizations
-tell you what it does. <strong>Eigenvalues</strong> (\(Av=\lambda v\)) exist for square matrices and describe
-directions the operator merely scales. <strong>Singular values</strong> exist for <em>any</em> matrix and
-describe how much the operator stretches orthonormal input directions into orthonormal output directions.</p>
+<h2>1 · Why zero-filled recon fails <span class="time">~15 min</span></h2>
+<p>The zero-filled reconstruction is just the adjoint applied to measured data:
+\(x_{\text{ZF}}=A^{H}y=F^{H}P^{H}y\) (Eqs 2–3 with density compensation). It is fast but <strong>not the
+inverse</strong>: under undersampling \(A^{H}A\neq I\), so the missing k-space shows up as
+aliasing/streaks. Recovering \(x\) from fewer measurements than unknowns is <strong>ill-posed</strong> — infinitely
+many images fit the data. You need extra information to choose among them.</p>
 
-<h2>2 · Main lesson <span class="time">~30 min</span></h2>
-<h3>The SVD and low-rank truncation</h3>
-<p>Every \(A\in\mathbb{C}^{m\times n}\) factors as</p>
-<p style="text-align:center">\( A = U\Sigma V^{H} = \sum_{k=1}^{r}\sigma_k\,u_k v_k^{H},\qquad
-\sigma_1\ge\sigma_2\ge\dots\ge\sigma_r>0. \)</p>
-<p>The <strong>rank-\(P\) truncation</strong> \(A_P=\sum_{k=1}^{P}\sigma_k u_k v_k^{H}\) is the best rank-\(P\)
-approximation in the \(\ell_2\)/Frobenius sense (Eckart&ndash;Young). The <strong>explained variance</strong> of
-keeping \(P\) components is</p>
-<p style="text-align:center">\( \text{explained}(P)=\dfrac{\sum_{k=1}^{P}\sigma_k^{2}}{\sum_{k=1}^{r}\sigma_k^{2}}. \)</p>
-<div class="card"><span class="tag">🟠 MRI</span> The paper builds a dictionary of T2 signal-decay curves (SEPG
-model, Day&nbsp;3), SVDs it, and keeps \(P=4\) principal components that hold <strong>99.96%</strong> of the
-variance. Those 4 &ldquo;temporal basis images&rdquo; replace the 32 echo-time images as the network&rsquo;s
-channels (Eq&nbsp;4) — this is the temporal-sparsity idea from compressed sensing, reused by deep learning.</div>
+<h2>2 · The regularized inverse problem <span class="time">~30 min</span></h2>
+<p style="text-align:center">\( \hat{x}=\arg\min_x\ \underbrace{\tfrac12\|Ax-y\|_2^2}_{\text{data fidelity}}
+\ +\ \lambda\,\underbrace{R(x)}_{\text{prior / regularizer}} \)</p>
+<p>The regularizer \(R\) encodes what a plausible image looks like (small energy, sparse wavelets, low total
+variation, low-rank in time, or — in the paper — whatever a CNN has learned). \(\lambda\) sets the balance.</p>
+<h3>Tikhonov: the one case with a closed form</h3>
+<p>With \(R(x)=\tfrac12\|x\|_2^2\), setting the gradient to zero gives the <strong>normal equations</strong>:</p>
+<p style="text-align:center">\( (A^{H}A+\lambda I)\,\hat{x}=A^{H}y. \)</p>
+<p>The \(+\lambda I\) makes the operator invertible and well-conditioned even when \(A^{H}A\) is rank-deficient —
+this is the linear system a conjugate-gradient solver (or the paper&rsquo;s DC step) tackles.</p>
+<div class="card"><span class="tag">🟣 MAP view</span> If noise is Gaussian and the image has prior
+\(p(x)\propto e^{-\lambda R(x)}\), then \(\hat x\) is the <strong>maximum-a-posteriori</strong> estimate.
+Data-fidelity = log-likelihood; \(\lambda R\) = log-prior. Choosing \(R\) <em>is</em> choosing a prior belief
+about images.</div>
 
-<h3>The Discrete Fourier Transform</h3>
-<p>The DFT matrix \(F\) with \(F_{kn}=\tfrac{1}{\sqrt{N}}e^{-2\pi i kn/N}\) is <strong>unitary</strong>
-(\(F^{H}F=I\)), so by <strong>Parseval</strong> it preserves energy: \(\|Fx\|_2=\|x\|_2\). In MRI, \(F\) maps
-image ↔ k-space. The radial acquisition uses a <em>nonuniform</em> FFT \(\mathcal{T}\) (samples off the Cartesian
-grid), but the unitary intuition still guides the adjoint \(\mathcal{T}^{H}\) you built on Day&nbsp;1.</p>
-<div class="card"><span class="tag">⚙️ convention</span> &ldquo;Centered&rdquo; FFT =
-<code>fftshift(fft(ifftshift(x)))</code> with <code>norm="ortho"</code>. <code>ifftshift</code> before,
-<code>fftshift</code> after puts DC at the image centre and makes the transform unitary — the convention used in
-<code>code/mri_operators.py</code>.</div>
-
-<h2>3 · Coding activity — SVD energy &amp; the temporal subspace <span class="time">~25 min</span></h2>
-<p>Below is the <strong>real SVD spectrum</strong> of a synthetic 24-curve T2-decay dictionary (echo spacing
-8.1&nbsp;ms, 32 echoes, T2 from 20&ndash;160&nbsp;ms), computed with NumPy. Drag the slider to choose how many
-principal components \(P\) to keep and watch the explained variance. This is exactly the compression in Eq&nbsp;4.</p>
-
+<h3>The \(\lambda\) trade-off — find the sweet spot</h3>
+<p>Too little regularization: the recon fits noise and keeps aliasing (high variance). Too much: it over-smooths
+and blurs real structure (high bias). Drag \(\lambda\):</p>
 <div class="card">
-<div id="svchart"></div>
-<label style="display:block;margin:14px 0 4px">Keep <b id="pval">1</b> of 24 components (\(P\)):</label>
-<input type="range" id="pslider" min="1" max="12" value="1">
-<div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:10px">
-  <span class="big" id="varpct">96.6403%</span>
-  <span style="color:var(--sec)">of variance captured &nbsp;·&nbsp; discarding <b id="ndrop">23</b> components</span>
+<div id="lcurve"></div>
+<label style="display:block;margin:10px 0 3px">\(\log_{10}\lambda\) = <b id="lval">0.0</b></label>
+<input type="range" id="lam" min="-30" max="30" value="0">
+<div style="display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-top:8px">
+  <span class="big" id="regime">optimal</span>
+  <span style="color:var(--sec)" id="regimeMsg"></span>
 </div>
-<div class="varbar"><div class="varfill" id="varfill"></div></div>
-<p id="svmsg" style="font-size:14px;color:var(--sec);margin:6px 0 0"></p>
 </div>
-<p style="font-size:13px;color:var(--sec)">This synthetic, noiseless dictionary is even more compressible than
-the paper&rsquo;s (P=3 already ≈ 99.99%); Toner&nbsp;2025 reports <strong>99.96% at P=4</strong> on their real
-SEPG dictionary. The lesson is the same: signal-decay curves live in a tiny subspace.</p>
 
-<pre><code># NumPy equivalent (what produced the numbers above)
-U, S, Vt = np.linalg.svd(X, full_matrices=False)   # X: 24 curves x 32 echoes
-explained = np.cumsum(S**2) / (S**2).sum()          # cumulative variance
-P = np.searchsorted(explained, 0.9996) + 1          # smallest P for 99.96%</code></pre>
+<h2>3 · The bridge — from CG to the paper&rsquo;s unrolled network <span class="time">~20 min</span></h2>
+<p>Solving the regularized problem iteratively (proximal gradient / ISTA) alternates a
+<strong>gradient step toward the data</strong> with a <strong>proximal step for the prior</strong>. The paper
+keeps the data step exactly (its DC block, Eq 9) and <em>replaces the proximal step with a learned CNN</em>:</p>
+<div class="card">
+<div id="flow"></div>
+<p style="font-size:13px;color:var(--sec);margin:8px 0 0">Classical: prox of a fixed \(R\) (wavelet/TV/low-rank).
+Paper (Eq 9): \(x''^{(j)}=\text{CNN}(x')-\eta\,A^{*}(A\,\text{CNN}(x')-y)\) — same skeleton, learned prior,
+learned step \(\eta\), \(K=5\) times.</p>
+</div>
 
-<h2>4 · Quiz <span class="score" id="score">(0 / 3)</span></h2>
+<div class="done">
+<b>🎓 You&rsquo;ve completed the 1-week plan.</b> Day 1 (adjoints) → Day 2 (SVD/DFT) → Day 3 (signal/k-space/SEPG)
+→ Day 4 (forward model \(A\)) → Day 5 (regularized inverse + the DL bridge). You now have every piece behind
+Toner 2025&rsquo;s Equations 1–9. Next: the <a href="interactive.html">interactive concept lesson</a> (Eq 9 in
+depth with the real Table 1 graph) and the <a href="11_RESEARCH_ROADMAP.html">research roadmap</a>.
+</div>
+
+<h2>4 · Coding activity <span class="time">~25 min</span></h2>
+<pre><code># Tikhonov recon via conjugate gradient on (A^H A + lam I) x = A^H y
+from scipy.sparse.linalg import cg, LinearOperator
+def normal_op(lam, mask):
+    mv = lambda x: adjoint(forward(x.reshape(shp), mask), mask).ravel() + lam*x
+    return LinearOperator((N,N), matvec=mv, dtype=complex)
+x_hat,_ = cg(normal_op(lam, mask), (adjoint(y,mask)).ravel(), maxiter=50)
+# sweep lam; plot reconstruction error -> you will see the U-shaped curve above.</code></pre>
+
+<h2>5 · Quiz <span class="score" id="score">(0 / 3)</span></h2>
 <div id="quiz"></div>
 
-<h2>5 · Reflection &amp; expected output</h2>
-<div class="card"><span class="tag">✍️ reflection</span> The paper compresses coils (30+ → 6) <em>and</em>
-echo times (32 → 4) with the same tool. In 2&ndash;3 sentences, explain what &ldquo;redundancy&rdquo; the SVD is
-exploiting in each case, and why compressing helps an 11&nbsp;GB GPU.</div>
-<p><strong>Expected output of Day 2:</strong> (a) the reflection note in <code>notes/</code>; (b) you can state
-the SVD and the explained-variance formula from memory; (c) using the widget, you can justify P&nbsp;=&nbsp;4;
-(d) 3/3 on the quiz.</p>
+<h2>6 · Reflection &amp; expected output</h2>
+<div class="card"><span class="tag">✍️ reflection</span> In one short paragraph, tie the week together: how does
+the <em>learned</em> regularizer in Eq 9 relate to the fixed Tikhonov/TV/low-rank priors — what does the network
+gain, and what interpretability does it give up?</div>
+<p><strong>Expected output of Day 5:</strong> (a) the reflection paragraph; (b) a CG Tikhonov recon with a
+\(\lambda\)-sweep reproducing the U-shaped error curve; (c) you can annotate the recon flow with the data and
+prior steps; (d) 3/3 quiz.</p>
 
-<h2>6 · Mastery checklist</h2>
+<h2>7 · Mastery checklist</h2>
 <ul class="chk" id="mastery"></ul>
 <button id="resetChk" style="margin-top:8px">Reset checklist</button>
 
-<div class="foot">Day 2 of 5 · grounded in Toner 2025 §2.1 (Eq 4) &amp; §2.4 · SVD values computed from a
-synthetic SEPG-style dictionary · next: <em>Day 3 — the MRI signal, k-space, and the SEPG decay model.</em></div>
+<div class="foot">Day 5 of 5 · capstone · grounded in Toner 2025 §2.1–2.2 (Eqs 2–3, 5–9) · the λ curve is a
+schematic bias–variance illustration · you&rsquo;ve finished the 1-week plan.</div>
 
 <script>
-// ---- real, precomputed SVD spectrum of the synthetic T2 dictionary ----
-const S   = [10.76896,1.95673,0.44185,0.08695,0.01378,0.00171,0.00016,0.00001,0.00000,0.00000,0.00000,0.00000];
-const CUM = [96.6403,99.8308,99.9935,99.9998,100.0000,100.0000,100.0000,100.0000,100.0000,100.0000,100.0000,100.0000];
-const NTOTAL=24;
-
-// ---- singular-value bar chart (log scale, since values span 6 orders of magnitude) ----
+const cs=getComputedStyle(document.documentElement), col=k=>cs.getPropertyValue(k).trim();
+// ---------- lambda trade-off (U-shaped reconstruction error) ----------
 (function(){
-  const cs=getComputedStyle(document.documentElement);
-  const bar=cs.getPropertyValue('--bar').trim(), muted=cs.getPropertyValue('--muted').trim(),
-        sec=cs.getPropertyValue('--sec').trim(), grid=cs.getPropertyValue('--border').trim();
-  const n=8, W=680,H=240,M={t:16,r:16,b:40,l:44};
-  const logv=v=>Math.log10(Math.max(v,1e-5));
-  const lo=-5, hi=Math.ceil(logv(S[0]));
-  const bw=(W-M.l-M.r)/n*0.62, gap=(W-M.l-M.r)/n;
-  const y=v=>M.t+(1-(logv(v)-lo)/(hi-lo))*(H-M.t-M.b);
-  let bars='';
-  for(let i=0;i<n;i++){
-    const x=M.l+i*gap+ (gap-bw)/2, yt=y(S[i]), yb=H-M.b;
-    bars+=`<rect id="sv${i}" x="${x.toFixed(1)}" y="${yt.toFixed(1)}" width="${bw.toFixed(1)}"
-      height="${(yb-yt).toFixed(1)}" rx="3" fill="${bar}" opacity="1"/>`;
-    bars+=`<text x="${(x+bw/2).toFixed(1)}" y="${yb+16}" text-anchor="middle" font-size="11"
-      fill="${muted}">σ${i+1}</text>`;
+  const W=680,H=260,M={t:16,r:16,b:40,l:44};
+  const sig=t=>1/(1+Math.exp(-t));
+  const aliasNoise=l=>6*sig(-(l+0.6)*1.6);   // high at low lambda, ->0 (variance/aliasing)
+  const blur=l=>6*sig((l-0.6)*1.6);          // low at low lambda, high at high lambda (bias)
+  const err=l=>1+aliasNoise(l)+blur(l);      // U-shape
+  const L0=-3,L1=3, yMax=9;
+  const x=l=>M.l+((l-L0)/(L1-L0))*(W-M.l-M.r);
+  const y=v=>M.t+(1-v/yMax)*(H-M.t-M.b);
+  const el=document.getElementById('lcurve'), slider=document.getElementById('lam');
+  function pathOf(fn){let s='';for(let i=0;i<=120;i++){const l=L0+(i/120)*(L1-L0);
+    s+=(i?'L':'M')+x(l).toFixed(1)+' '+y(fn(l)).toFixed(1)+' ';}return s;}
+  function draw(){
+    const l=+slider.value/10;
+    document.getElementById('lval').textContent=l.toFixed(1);
+    let grid='';for(let g=0;g<=yMax;g+=3){const yy=y(g);
+      grid+=`<line x1="${M.l}" y1="${yy}" x2="${W-M.r}" y2="${yy}" stroke="${col('--border')}"/>`;}
+    const cxp=x(l);
+    el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Reconstruction error vs regularization strength, U-shaped">
+      ${grid}
+      <path d="${pathOf(aliasNoise)}" fill="none" stroke="${col('--under')}" stroke-width="1.8" stroke-dasharray="5 4" opacity="0.8"/>
+      <path d="${pathOf(blur)}" fill="none" stroke="${col('--over')}" stroke-width="1.8" stroke-dasharray="5 4" opacity="0.8"/>
+      <path d="${pathOf(err)}" fill="none" stroke="${col('--accent')}" stroke-width="2.6"/>
+      <line x1="${cxp}" y1="${M.t}" x2="${cxp}" y2="${H-M.b}" stroke="${col('--muted')}" stroke-dasharray="3 3"/>
+      <circle cx="${cxp}" cy="${y(err(l))}" r="5.5" fill="${col('--accent')}" stroke="${col('--surface')}" stroke-width="2"/>
+      <text x="${M.l}" y="${H-24}" font-size="11" fill="${col('--under')}">— aliasing / noise (variance)</text>
+      <text x="${M.l+230}" y="${H-24}" font-size="11" fill="${col('--over')}">— blur (bias)</text>
+      <text x="${M.l+400}" y="${H-24}" font-size="11" fill="${col('--accent')}">— total error</text>
+      <text x="${(M.l+W-M.r)/2}" y="${H-6}" text-anchor="middle" font-size="11" fill="${col('--sec')}">← less regularization      log₁₀λ      more regularization →</text>
+      <text x="10" y="${(M.t+H-M.b)/2}" transform="rotate(-90 10 ${(M.t+H-M.b)/2})" text-anchor="middle" font-size="11" fill="${col('--sec')}">reconstruction error</text>
+    </svg>`;
+    let r,m;
+    if(l<-1){r='under-regularized';m='λ too small — the recon fits noise and keeps aliasing/streaks (high variance).';}
+    else if(l>1){r='over-regularized';m='λ too large — real structure is blurred away (high bias).';}
+    else{r='≈ optimal';m='balanced — data fidelity and prior trade off near the bottom of the U.';}
+    document.getElementById('regime').textContent=r;
+    document.getElementById('regimeMsg').textContent=m;
   }
-  let ax='';
-  for(let g=lo; g<=hi; g++){const yy=y(Math.pow(10,g));
-    ax+=`<line x1="${M.l}" y1="${yy}" x2="${W-M.r}" y2="${yy}" stroke="${grid}"/>`+
-        `<text x="${M.l-6}" y="${yy+4}" text-anchor="end" font-size="10" fill="${muted}">10^${g}</text>`;}
-  document.getElementById('svchart').innerHTML=
-    `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Singular values on a log scale, decaying rapidly">
-      ${ax}${bars}
-      <text x="12" y="${(M.t+H-M.b)/2}" transform="rotate(-90 12 ${(M.t+H-M.b)/2})" text-anchor="middle"
-        font-size="11" fill="${sec}">singular value σ (log)</text></svg>`;
+  slider.oninput=draw; draw();
 })();
 
-// ---- slider: explained variance + highlight kept bars ----
-const slider=document.getElementById('pslider');
-function updateP(){
-  const P=+slider.value;
-  document.getElementById('pval').textContent=P;
-  document.getElementById('varpct').textContent=CUM[P-1].toFixed(4)+'%';
-  document.getElementById('ndrop').textContent=NTOTAL-P;
-  document.getElementById('varfill').style.width=Math.min(100,CUM[P-1])+'%';
-  for(let i=0;i<8;i++){const el=document.getElementById('sv'+i); if(el)el.style.opacity=(i<P?1:0.25);}
-  const msg=P>=4?'✅ P = '+P+' already captures essentially all signal variance — this is why the paper uses only 4 PC channels.':
-    (P===3?'Almost there — 3 components capture 99.99%.':'Keep dragging: a handful of components capture nearly everything.');
-  document.getElementById('svmsg').textContent=msg;
-}
-slider.oninput=updateP; updateP();
+// ---------- recon flow diagram ----------
+(function(){
+  const boxes=['k-space y','Aᴴ (zero-fill)','aliased x₀','CNN / prox  (prior)','data consistency  (Eq 9)','clean x̂'];
+  const W=680,H=118,n=boxes.length,bw=104,bh=44,gap=(W-bw*n)/(n-1),cy=64,ty=cy-bh/2;
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Reconstruction pipeline">
+    <text x="${W/2}" y="16" text-anchor="middle" font-size="12" fill="${col('--accent')}" font-weight="700">iterate ×K  ⟳</text>`;
+  for(let i=0;i<n;i++){const x=i*(bw+gap);
+    const hl=(i===3||i===4);
+    s+=`<rect x="${x}" y="${ty}" width="${bw}" height="${bh}" rx="9" fill="${hl?col('--flow'):col('--surface')}" stroke="${col('--flow')}" stroke-width="1.6"/>`;
+    s+=`<text x="${x+bw/2}" y="${cy+3}" text-anchor="middle" font-size="11" fill="${hl?col('--flowink'):col('--fg')}" font-weight="600">${boxes[i]}</text>`;
+    if(i<n-1){const ax=x+bw,ax2=x+bw+gap;
+      s+=`<line x1="${ax}" y1="${cy}" x2="${ax2-8}" y2="${cy}" stroke="${col('--accent')}" stroke-width="2"/>`+
+         `<polygon points="${ax2-8},${cy-4} ${ax2},${cy} ${ax2-8},${cy+4}" fill="${col('--accent')}"/>`;}
+  }
+  s+=`</svg>`;
+  document.getElementById('flow').innerHTML=s;
+})();
 
-// ---- quiz ----
+// ---------- quiz ----------
 const QUIZ=[
- {stem:'What do the singular values \\(\\sigma_k\\) of a matrix tell you?',
-  opts:['The eigenvectors of \\(A\\)','How much \\(A\\) stretches orthonormal input directions (any shape of \\(A\\))',
-        'Only defined for symmetric matrices','The determinant of \\(A\\)'],
+ {stem:'Why is the zero-filled reconstruction \\(x_{ZF}=A^{H}y\\) not the true image?',
+  opts:['Because \\(A^{H}\\) is nonlinear','Because under undersampling \\(A^{H}A\\neq I\\), so missing k-space becomes aliasing/streaks',
+        'Because it discards the phase','Because coils are complex'],
   correct:1,
-  why:'Singular values exist for any \\(m\\times n\\) matrix and give the stretch factors along the right singular vectors. Eigenvalues need a square matrix; singular values do not.'},
- {stem:'Keeping \\(P\\) components captures \\(\\sum_{k\\le P}\\sigma_k^2/\\sum_k\\sigma_k^2\\). Why does P=4 suffice for the T2 dictionary?',
-  opts:['Because there are only 4 echo times','Because the singular values decay extremely fast, so 4 terms already hold ~99.96% of the energy',
-        'Because the network has 4 layers','Because the DFT has 4 frequencies'],
+  why:'The adjoint is not the inverse. When you sample fewer points than unknowns, \\(A^{H}A\\) is not identity, so \\(A^{H}y\\) contains aliasing. Recovering \\(x\\) is ill-posed and needs a prior.'},
+ {stem:'What are the Tikhonov normal equations for \\(R(x)=\\tfrac12\\|x\\|_2^2\\)?',
+  opts:['\\(A^{H}A\\,\\hat x=y\\)','\\((A^{H}A+\\lambda I)\\,\\hat x=A^{H}y\\)',
+        '\\(\\hat x=A^{H}y\\)','\\((A+\\lambda I)\\hat x=y\\)'],
   correct:1,
-  why:'The decay curves are highly correlated, so the SVD spectrum collapses after a few terms (see the log-scale chart). 4 PCs ≈ 99.96% variance — the temporal subspace of Eq 4.'},
- {stem:'Why is the centered DFT matrix \\(F\\) called unitary, and what does that give you?',
-  opts:['\\(F=F^{T}\\); it makes \\(F\\) symmetric','\\(F^{H}F=I\\); by Parseval it preserves energy, \\(\\|Fx\\|_2=\\|x\\|_2\\)',
-        '\\(F\\) has determinant 0','It has only real entries'],
+  why:'Set the gradient of \\(\\tfrac12\\|Ax-y\\|^2+\\tfrac{\\lambda}{2}\\|x\\|^2\\) to zero: \\((A^{H}A+\\lambda I)\\hat x=A^{H}y\\). The \\(+\\lambda I\\) regularizes the (possibly singular) \\(A^{H}A\\) — this is what CG / the DC step solves.'},
+ {stem:'In the paper&rsquo;s unrolled network (Eq 9), what replaces the proximal step of a fixed regularizer?',
+  opts:['The sampling mask','A learned CNN block','The Fourier transform','The step size \\(\\eta\\) alone'],
   correct:1,
-  why:'Unitarity \\(F^{H}F=I\\) ⇒ Parseval: the transform preserves \\(\\ell_2\\) norm. That is why FFT↔iFFT round-trips exactly (your Day-1/Parseval test) and why the adjoint is the inverse for the full Cartesian case.'},
+  why:'The CNN plays the role of \\(\\operatorname{prox}_{\\lambda R}\\) — a learned, implicit prior — while the DC step keeps the exact data-fidelity gradient. Same ISTA skeleton, learned regularizer, repeated K=5 times.'},
 ];
 const quizEl=document.getElementById('quiz'),scoreEl=document.getElementById('score');
 let answered=0,correct=0;
@@ -253,26 +265,23 @@ QUIZ.forEach((q,qi)=>{
   });
   quizEl.appendChild(d);
 });
-
-// ---- mastery checklist ----
-const ITEMS=['I can read a matrix as a linear operator \\(x\\mapsto Ax\\)',
-  'I can state the difference between eigenvalues and singular values',
-  'I can write the SVD \\(A=U\\Sigma V^{H}\\) and the rank-P truncation',
-  'I can compute explained variance from singular values',
-  'I can explain why P=4 PCs suffice for the T2 dictionary',
-  'I can state DFT unitarity and Parseval, and the centered-FFT convention'];
-const KEY='toner2025_day2_chk';
+// ---------- mastery ----------
+const ITEMS=['I can explain why \\(A^{H}y\\) is not the inverse',
+  'I can write the regularized problem and name the two terms',
+  'I can give the Tikhonov normal equations',
+  'I can describe the \\(\\lambda\\) bias–variance trade-off and MAP view',
+  'I can connect ISTA/CG to the paper’s unrolled DC step (Eq 9)',
+  'I can summarize the whole week from adjoint → forward model → inverse'];
+const KEY='toner2025_day5_chk';
 let saved=JSON.parse(localStorage.getItem(KEY)||'[]');
 const mEl=document.getElementById('mastery');
-function draw(){
-  mEl.innerHTML='';
+function draw(){mEl.innerHTML='';
   ITEMS.forEach((t,i)=>{const li=document.createElement('li');
     li.innerHTML=`<label style="cursor:pointer"><input type="checkbox" ${saved[i]?'checked':''} data-i="${i}"> ${t}</label>`;
     mEl.appendChild(li);});
-  mEl.querySelectorAll('input').forEach(c=>c.onchange=e=>{
-    saved[e.target.dataset.i]=e.target.checked;localStorage.setItem(KEY,JSON.stringify(saved));});
-  if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise([mEl]);
-}
+  mEl.querySelectorAll('input').forEach(c=>c.onchange=e=>{saved[e.target.dataset.i]=e.target.checked;
+    localStorage.setItem(KEY,JSON.stringify(saved));});
+  if(window.MathJax&&MathJax.typesetPromise)MathJax.typesetPromise([mEl]);}
 draw();
 document.getElementById('resetChk').onclick=()=>{saved=[];localStorage.removeItem(KEY);draw();};
 </script>
